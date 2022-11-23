@@ -108,9 +108,7 @@ namespace Shard.Shared.Web.IntegrationTests
 
             builder.DestinationSystem = builder.System;
             builder.DestinationPlanet = null;
-
-            using var moveResponse = await client.PutTestEntityAsync(builder.Url, builder);
-            await moveResponse.AssertSuccessStatusCode();
+            await client.PutAsync(builder);
 
             var response = await client.GetAsync(originalBuilding.Url);
             await response.AssertStatusEquals(HttpStatusCode.NotFound);
@@ -128,9 +126,7 @@ namespace Shard.Shared.Web.IntegrationTests
 
             builder.DestinationSystem = builder.System;
             builder.DestinationPlanet = builder.Planet;
-
-            using var moveResponse = await client.PutTestEntityAsync(builder.Url, builder);
-            await moveResponse.AssertSuccessStatusCode();
+            await client.PutAsync(builder);
 
             var response = await client.GetAsync(originalBuilding.Url);
             await response.AssertSuccessStatusCode();
@@ -204,9 +200,7 @@ namespace Shard.Shared.Web.IntegrationTests
 
             builder.DestinationSystem = builder.System;
             builder.DestinationPlanet = null;
-
-            using var moveResponse = await client.PutTestEntityAsync(builder.Url, builder);
-            await moveResponse.AssertSuccessStatusCode();
+            await client.PutAsync(builder);
 
             await fakeClock.Advance(new TimeSpan(0, 0, 1));
 
