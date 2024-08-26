@@ -1,6 +1,6 @@
 ﻿namespace Shard.Shared.Core;
 
-public sealed class WrappingTimer : MarshalByRefObject, ITimer
+public sealed class WrappingTimer : MarshalByRefObject, IShardTimer
 {
     private readonly Timer systemTimer;
 

@@ -1,6 +1,6 @@
 ﻿namespace Shard.Shared.Core;
 
-public interface ITimer: IAsyncDisposable, IDisposable
+public interface IShardTimer: IAsyncDisposable, IDisposable
 {
     bool Change(int dueTime, int period);
     bool Change(long dueTime, long period);

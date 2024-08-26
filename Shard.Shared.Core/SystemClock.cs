@@ -4,19 +4,19 @@ public class SystemClock : IClock
 {
     public DateTime Now => DateTime.Now;
 
-    public ITimer CreateTimer(TimerCallback callback)
+    public IShardTimer CreateTimer(TimerCallback callback)
         => new WrappingTimer(new(callback));
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, int dueTime, int period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, int dueTime, int period)
         => new WrappingTimer(new(callback, state, dueTime, period));
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, long dueTime, long period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, long dueTime, long period)
         => new WrappingTimer(new(callback, state, dueTime, period));
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
         => new WrappingTimer(new(callback, state, dueTime, period));
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, uint dueTime, uint period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, uint dueTime, uint period)
         => new WrappingTimer(new(callback, state, dueTime, period));
 
     public Task Delay(int millisecondsDelay)

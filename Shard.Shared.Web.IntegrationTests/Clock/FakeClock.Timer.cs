@@ -4,7 +4,7 @@ namespace Shard.Shared.Web.IntegrationTests.Clock;
 
 public partial class FakeClock
 {
-    public sealed class Timer : ITimer, IEvent
+    public sealed class Timer : IShardTimer, IEvent
     {
         private readonly FakeClock clock;
         private readonly TimerCallback callback;

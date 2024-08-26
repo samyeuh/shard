@@ -113,27 +113,27 @@ public partial class FakeClock : IClock, IStartupFilter
     public void Sleep(TimeSpan timeout)
         => Delay(timeout).Wait();
 
-    public ITimer CreateTimer(TimerCallback callback)
+    public IShardTimer CreateTimer(TimerCallback callback)
         => CreateTimer(callback, this, uint.MaxValue, uint.MaxValue);
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
         => CreateTimer(callback, state, (long)dueTime.TotalMilliseconds, (long)period.TotalMilliseconds);
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, int dueTime, int period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, int dueTime, int period)
     {
         var timer = new Timer(this, callback, state);
         timer.Change(dueTime, period);
         return timer;
     }
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, long dueTime, long period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, long dueTime, long period)
     {
         var timer = new Timer(this, callback, state);
         timer.Change(dueTime, period);
         return timer;
     }
 
-    public ITimer CreateTimer(TimerCallback callback, object? state, uint dueTime, uint period)
+    public IShardTimer CreateTimer(TimerCallback callback, object? state, uint dueTime, uint period)
     {
         var timer = new Timer(this, callback, state);
         timer.Change(dueTime, period);
