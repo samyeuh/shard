@@ -1,0 +1,6 @@
+@Shard.EnzoSamy.Api_HostAddress = http://localhost:5152
+
+GET {{Shard.EnzoSamy.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
