@@ -17,11 +17,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\Shard.EnzoSamy.Api\Shard.EnzoSamy.Api.csproj" />
       <ProjectReference Include="..\Shard.Shared.Web.IntegrationTests\Shard.Shared.Web.IntegrationTests.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
+    
+    
 </Project>

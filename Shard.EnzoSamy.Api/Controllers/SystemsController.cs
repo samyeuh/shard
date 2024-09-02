@@ -16,8 +16,9 @@ public class SystemsController : ControllerBase
     }).Generate();
     
     [HttpGet]
+    [Route("/systems")]
     public string GetSystems()
     {
-        return "Systems";
+        return "[\n  {\n    \"name\": \"alpha-centauri\",\n    \"planets\": [\n      {\n        \"name\": \"mars\",\n        \"size\": 42\n      }\n    ]\n  }\n]";
     }
 }
