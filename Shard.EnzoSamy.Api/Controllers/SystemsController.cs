@@ -21,10 +21,10 @@ public class SystemsController : ControllerBase
     
     [HttpGet]
     [Route("/systems")]
-    public ActionResult<SystemSpecification> GetSystems()
+    public ActionResult<IReadOnlyList<SystemSpecification>> GetSystems()
     {
         var systems = _sectorSpecification.Systems;
-        return Ok(systems);
+        return new (systems);
     }
     
     [HttpGet]
@@ -33,24 +33,24 @@ public class SystemsController : ControllerBase
     {
         var system = _sectorSpecification.Systems.First(system => system.Name == systemId);
         
-        return Ok(system);
+        return system;
     }
     
     [HttpGet]
     [Route("/systems/{systemId}/planets/{planetId}")]
-    public ActionResult<SystemSpecification> GetOnePlanet(string systemId, string planetId)
+    public ActionResult<PlanetSpecification> GetOnePlanet(string systemId, string planetId)
     {
         var system = _sectorSpecification.Systems.First(system => system.Name == systemId);
         var planet = system.Planets.First(planet => planet.Name == planetId);
-        return Ok(planet);
+        return planet;
     }
     
     [HttpGet]
     [Route("/systems/{systemId}/planets")]
-    public ActionResult<SystemSpecification> GetPlanets(string systemId)
+    public ActionResult<IReadOnlyList<PlanetSpecification>> GetPlanets(string systemId)
     {
         var system = _sectorSpecification.Systems.First(system => system.Name == systemId);
         var planets = system.Planets;
-        return Ok(planets);
+        return new (planets);
     }
 }
