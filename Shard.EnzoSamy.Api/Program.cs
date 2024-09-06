@@ -9,6 +9,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Enregistrer SectorSpecification comme singleton
+builder.Services.AddSingleton(provider =>
+{
+    return new MapGenerator(new MapGeneratorOptions()
+    {
+        Seed = "EnzoSamy"
+    }).Generate();
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
