@@ -18,7 +18,6 @@ public class SystemsController : ControllerBase
         _sectorSpecification = sectorSpecification;
     }
     
-    
     [HttpGet]
     [Route("/systems")]
     public ActionResult<IReadOnlyList<SystemSpecification>> GetSystems()

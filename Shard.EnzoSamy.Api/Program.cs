@@ -1,3 +1,4 @@
+using Shard.EnzoSamy.Api;
 using Shard.Shared.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,8 @@ builder.Services.AddSingleton(provider =>
         Seed = "EnzoSamy"
     }).Generate();
 });
+
+builder.Services.AddSingleton(new List<UserSpecification>());
 
 var app = builder.Build();
 
