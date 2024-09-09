@@ -14,7 +14,7 @@ public class SystemsController : ControllerBase
     
     private readonly SectorSpecification _sectorSpecification;
     
-    public record SystemWithoutPlanetsResources(string SystemName, List<PlanetsController.PlanetWithoutResource> Planets);
+    public record SystemWithoutPlanetsResources(string name, List<PlanetsController.PlanetWithoutResource> planets);
 
     public SystemsController(SectorSpecification sectorSpecification)
     {
@@ -38,7 +38,7 @@ public class SystemsController : ControllerBase
         var systems = _sectorSpecification.Systems
             .Select(system => new SystemWithoutPlanetsResources(system.Name, system.Planets
                 .Select(planet => new PlanetsController.PlanetWithoutResource(planet.Name, planet.Size)).ToList())).ToList();
-        var system = systems.First(system => system.SystemName == systemId);
+        var system = systems.First(system => system.name == systemId);
         
         return system;
     }
