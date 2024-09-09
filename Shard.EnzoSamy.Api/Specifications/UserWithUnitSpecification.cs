@@ -10,13 +10,21 @@ public class UserWithUnitSpecification
     
     public UserWithUnitSpecification()
     { }
+
+    public UserWithUnitSpecification(string id, string pseudo, List<UnitSpecification> units)
+    {
+        Id = id;
+        Pseudo = pseudo;
+        Units = units;
+    }
     
-    public UserWithUnitSpecification(string id, string pseudo, IReadOnlyList<SystemSpecification> systemList)
+    public UserWithUnitSpecification(string id, string pseudo, IReadOnlyList<SystemSpecification> systemList, List<UserWithUnitSpecification> userWithUnit)
     {
         Random random = new Random();
         Id = id;
         Pseudo = pseudo;
         Units = Generate(random, systemList);
+        userWithUnit.Add(new UserWithUnitSpecification(Id, Pseudo, Units));
     }
 
     private List<UnitSpecification> Generate(Random random, IReadOnlyList<SystemSpecification> systemList)
