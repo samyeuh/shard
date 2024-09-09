@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace Shard.EnzoSamy.Api.Controllers;
 
@@ -24,9 +26,16 @@ public class UsersController : ControllerBase
     [Route("/users/{userId}")]
     public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
     {
+        string pattern = "^[a-zA-Z0-9_-]+$";
+        
         if (userId != updatedUser.Id)
         {
             return BadRequest("The userId in the URL does not match the Id in the body.");
+        }
+        
+        if (!Regex.IsMatch(userId, pattern))
+        {
+            return BadRequest("The body does not contain a valid identifier.");
         }
 
         try
