@@ -7,8 +7,8 @@ public class UnitSpecification
 {
     public string Id { get; init; }
     public string Type { get; init; }
-    public SystemSpecification system { get; init; }
-    public PlanetSpecification planet { get; init; }
+    public string System { get; init; }
+    public string Planet { get; init; }
 
     public UnitSpecification() { }
 
@@ -16,8 +16,9 @@ public class UnitSpecification
     {
         Id = random.Next(1000).ToString();
         Type = "scout";
-        system = systemList[random.Next(systemList.Count)];
-        List<PlanetSpecification> planetList = system.Planets.ToList();
-        planet = planetList[random.Next(planetList.Count)];
+        SystemSpecification systemSpecification = systemList[random.Next(systemList.Count)];
+        System = systemSpecification.Name;
+        List<PlanetSpecification> planetList = systemSpecification.Planets.ToList();
+        Planet = planetList[random.Next(planetList.Count)].Name;
     }
 }
