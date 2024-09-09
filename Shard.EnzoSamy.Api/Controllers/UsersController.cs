@@ -15,6 +15,11 @@ public class UsersController : ControllerBase
         _users = users;
     }
     
+    private int FindUserIndex(string userId)
+    {
+        return _users.FindIndex(user => user.Id == userId);
+    }
+    
     [HttpPut]
     [Route("/users/{userId}")]
     public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
@@ -26,7 +31,7 @@ public class UsersController : ControllerBase
 
         try
         {
-            int index = _users.FindIndex(user => user.Id == userId);
+            int index = FindUserIndex(userId);
 
             if (index == -1)
             {
@@ -52,7 +57,7 @@ public class UsersController : ControllerBase
     {
         try
         {
-            int index = _users.FindIndex(user => user.Id == userId);
+            int index = FindUserIndex(userId);
             
             if (index != -1)
             {
@@ -69,6 +74,7 @@ public class UsersController : ControllerBase
             return StatusCode(500, "An error occurred while getting the user."); 
         }
     }
+   
 
     
 }

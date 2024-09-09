@@ -20,6 +20,7 @@ builder.Services.AddSingleton(provider =>
 });
 
 builder.Services.AddSingleton(new List<UserSpecification>());
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
