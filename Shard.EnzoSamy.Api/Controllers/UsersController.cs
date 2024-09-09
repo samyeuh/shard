@@ -27,6 +27,7 @@ public class UsersController : ControllerBase
     public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
     {
         string pattern = "^[a-zA-Z0-9_-]+$";
+        // TODO: fonction global pour le pattern
         
         if (userId != updatedUser.Id)
         {

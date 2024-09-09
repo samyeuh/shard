@@ -7,8 +7,8 @@ public class UnitSpecification
 {
     public string Id { get; init; }
     public string Type { get; init; }
-    public string System { get; init; }
-    public string Planet { get; init; }
+    public string System { get; set; }
+    public string? Planet { get; set; }
 
     public UnitSpecification() { }
 
