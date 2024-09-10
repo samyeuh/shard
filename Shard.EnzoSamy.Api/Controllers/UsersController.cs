@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic.CompilerServices;
+using Shard.EnzoSamy.Api.Utilities;
 
 namespace Shard.EnzoSamy.Api.Controllers;
 
@@ -11,37 +12,31 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class UsersController : ControllerBase
 {
     private List<UserSpecification> _users;
+    private readonly UserService _userService;
     
-    public UsersController(List<UserSpecification> users)
+    public UsersController(List<UserSpecification> users, UserService userService)
     {
         _users = users;
-    }
-    
-    private int FindUserIndex(string userId)
-    {
-        return _users.FindIndex(user => user.Id == userId);
+        _userService = userService;
     }
     
     [HttpPut]
     [Route("/users/{userId}")]
     public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
     {
-        string pattern = "^[a-zA-Z0-9_-]+$";
-        // TODO: fonction global pour le pattern
-        
         if (userId != updatedUser.Id)
         {
             return BadRequest("The userId in the URL does not match the Id in the body.");
         }
         
-        if (!Regex.IsMatch(userId, pattern))
+        if (!ValidationUtils.IsValidUserId(userId))
         {
             return BadRequest("The body does not contain a valid identifier.");
         }
 
         try
         {
-            int index = FindUserIndex(userId);
+            int index = _userService.FindUserIndex(userId);
 
             if (index == -1)
             {
@@ -67,7 +62,7 @@ public class UsersController : ControllerBase
     {
         try
         {
-            int index = FindUserIndex(userId);
+            int index = _userService.FindUserIndex(userId);
             
             if (index != -1)
             {

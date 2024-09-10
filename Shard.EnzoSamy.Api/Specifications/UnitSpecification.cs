@@ -18,7 +18,7 @@ public class UnitSpecification
         Type = "scout";
         SystemSpecification systemSpecification = systemList[random.Next(systemList.Count)];
         System = systemSpecification.Name;
-        List<PlanetSpecification> planetList = systemSpecification.Planets.ToList();
+        IReadOnlyList<PlanetSpecification> planetList = systemSpecification.Planets.ToList();
         Planet = planetList[random.Next(planetList.Count)].Name;
     }
 }
