@@ -6,6 +6,7 @@ public class UserService
     private readonly List<UserSpecification> _users;
     private readonly SectorSpecification _sector;
     private List<UserWithUnitSpecification> _usersWithUnit;
+    private Random _random = new Random();
 
     public UserService(List<UserSpecification> users, SectorSpecification sector, List<UserWithUnitSpecification> usersWithUnits)
     {
@@ -24,7 +25,8 @@ public class UserService
         var user = FindUser(userId);
         if (user == null) return null;
         
-        UserWithUnitSpecification userWithUnit = new UserWithUnitSpecification(user.Id, user.Pseudo, _sector.Systems, _usersWithUnit);
+        int indexSystem = _random.Next(_sector.Systems.Count);
+        UserWithUnitSpecification userWithUnit = new UserWithUnitSpecification(user.Id, user.Pseudo, _sector.Systems[indexSystem], _usersWithUnit);
         return userWithUnit.Units;
     }
     

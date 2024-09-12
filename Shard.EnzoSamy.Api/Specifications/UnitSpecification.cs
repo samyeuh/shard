@@ -12,11 +12,11 @@ public class UnitSpecification
 
     public UnitSpecification() { }
 
-    public UnitSpecification(Random random, IReadOnlyList<SystemSpecification> systemList)
+    public UnitSpecification(Random random, SystemSpecification system, String type)
     {
         Id = random.Next(1000).ToString();
-        Type = "scout";
-        SystemSpecification systemSpecification = systemList[random.Next(systemList.Count)];
+        Type = type;
+        SystemSpecification systemSpecification = system;
         System = systemSpecification.Name;
         IReadOnlyList<PlanetSpecification> planetList = systemSpecification.Planets.ToList();
         Planet = planetList[random.Next(planetList.Count)].Name;

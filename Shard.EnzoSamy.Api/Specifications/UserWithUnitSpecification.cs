@@ -7,6 +7,8 @@ public class UserWithUnitSpecification
     public string Id { get; set; }
     public string Pseudo { get; set; }
     public List<UnitSpecification> Units { get; set; }
+
+    private string[] typeList = new[] { "scout", "builder" };
     
     public UserWithUnitSpecification()
     { }
@@ -18,17 +20,19 @@ public class UserWithUnitSpecification
         Units = units;
     }
     
-    public UserWithUnitSpecification(string id, string pseudo, IReadOnlyList<SystemSpecification> systemList, List<UserWithUnitSpecification> userWithUnit)
+    public UserWithUnitSpecification(string id, string pseudo, SystemSpecification system, List<UserWithUnitSpecification> userWithUnit)
     {
         Random random = new Random();
         Id = id;
         Pseudo = pseudo;
-        Units = Generate(random, systemList);
+        Units = Generate(random, system);
         userWithUnit.Add(new UserWithUnitSpecification(Id, Pseudo, Units));
     }
 
-    private List<UnitSpecification> Generate(Random random, IReadOnlyList<SystemSpecification> systemList)
-    {
-        return new List<UnitSpecification> { new UnitSpecification(random, systemList) };
+    private List<UnitSpecification> Generate(Random random, SystemSpecification system)
+    { 
+        return Enumerable.Range(1, 5)
+            .Select(_ => new UnitSpecification(random, system, typeList[random.Next(typeList.Length)]))
+            .ToList();
     }
 }
