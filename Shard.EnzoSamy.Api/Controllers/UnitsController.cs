@@ -14,6 +14,8 @@ public class UnitsController : ControllerBase
     private readonly UserService _userService;
     private readonly UnitService _unitService;
 
+    public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
+
     public UnitsController(UserService userService, UnitService unitService)
     {
         _userService = userService;
@@ -29,7 +31,7 @@ public class UnitsController : ControllerBase
 
         if (units != null)
         {
-            return Ok(units);
+            return units;
         }
         else
         {
@@ -50,7 +52,7 @@ public class UnitsController : ControllerBase
         var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit != null)
         {
-            return Ok(unit);
+            return unit;
         }
         else
         {
@@ -82,12 +84,12 @@ public class UnitsController : ControllerBase
         unit.System = updatedUnit.System;
         unit.Planet = updatedUnit.Planet;
 
-        return Ok(unit);
+        return unit;
     }
     
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}/location")]
-    public ActionResult GetUnitLocation(string userId, string unitId)
+    public ActionResult<UnitLocation> GetUnitLocation(string userId, string unitId)
     {
         var unit = _unitService.GetUnitForUser(userId, unitId);
         if (unit == null)
@@ -98,21 +100,11 @@ public class UnitsController : ControllerBase
         var planet = _unitService.GetPlanetForUnit(unit);
         if (planet == null)
         {
-            return Ok(new
-            {
-                system = unit.System,
-                planet = (string?)null,  
-                resourcesQuantity = new Dictionary<string, int?>()
-            });
+            return new UnitLocation(unit.System, null, null);
         }
         
         var resources = _unitService.MapPlanetResources(planet);
 
-        return Ok(new
-        {
-            system = unit.System,
-            planet = planet.Name,
-            resourcesQuantity = resources
-        });
+        return new UnitLocation(unit.System, planet.Name, resources);
     }
 }

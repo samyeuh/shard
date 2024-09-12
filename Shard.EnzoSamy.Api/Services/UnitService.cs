@@ -29,11 +29,11 @@ public class UnitService
         return system.Planets.FirstOrDefault(p => p.Name == unit.Planet);
     }
     
-    public Dictionary<string, int?> MapPlanetResources(PlanetSpecification planet)
+    public Dictionary<string, int>? MapPlanetResources(PlanetSpecification planet)
     {
         return planet.ResourceQuantity.ToDictionary(
             resource => resource.Key.ToString().ToLower(),
-            resource => (int?)resource.Value
+            resource => (int)resource.Value
         );
     }
 }
