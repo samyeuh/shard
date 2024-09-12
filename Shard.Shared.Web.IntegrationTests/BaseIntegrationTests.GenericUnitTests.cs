@@ -58,6 +58,7 @@ public partial class BaseIntegrationTests<TEntryPoint, TWebApplicationFactory>
         using var response = await client.PutTestEntityAsync($"{userPath}/units/{unit.Id}", unit);
 
         var unitAfterMove = new Unit(await response.AssertSuccessJsonAsync());
+        
         Assert.NotNull(unitAfterMove);
         Assert.Equal(unit.Id, unitAfterMove.Id);
         Assert.Equal(destinationSystem, unitAfterMove.DestinationSystem);

@@ -83,6 +83,8 @@ public class UnitsController : ControllerBase
 
         unit.System = updatedUnit.System;
         unit.Planet = updatedUnit.Planet;
+        unit.DestinationSystem = updatedUnit.DestinationSystem;
+        unit.DestinationPlanet = updatedUnit.DestinationPlanet;
 
         return unit;
     }
