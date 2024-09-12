@@ -30,9 +30,9 @@ public class UserWithUnitSpecification
     }
 
     private List<UnitSpecification> Generate(Random random, SystemSpecification system)
-    { 
-        return Enumerable.Range(1, 5)
-            .Select(_ => new UnitSpecification(random, system, typeList[random.Next(typeList.Length)]))
+    {
+        return Enumerable.Range(1, typeList.Count())
+            .Select(i => new UnitSpecification(random, system, typeList[i%2]))
             .ToList();
     }
 }
