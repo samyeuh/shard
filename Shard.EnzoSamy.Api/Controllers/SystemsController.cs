@@ -2,18 +2,13 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Shard.Shared.Core;
-
 namespace Shard.EnzoSamy.Api.Controllers;
-
 
 [Route("[controller]")]
 [ApiController]
-
 public class SystemsController : ControllerBase
 {
-    
     private readonly SectorSpecification _sectorSpecification;
-    
     public record SystemWithoutPlanetsResources(string name, List<PlanetsController.PlanetWithoutResource> planets);
 
     public SystemsController(SectorSpecification sectorSpecification)
