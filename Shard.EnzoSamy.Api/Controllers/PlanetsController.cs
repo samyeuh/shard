@@ -9,19 +9,19 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class PlanetsController : ControllerBase
 {
     
-    private readonly SectorSpecification _sectorSpecification;
+    private readonly SectorService _sectorService;
 
     public record PlanetWithoutResource(string Name, int Size);
 
-    public PlanetsController(SectorSpecification sectorSpecification)
+    public PlanetsController(SectorService sectorService)
     {
-        _sectorSpecification = sectorSpecification;
+        _sectorService = sectorService;
     }
     [HttpGet]
     [Route("/systems/{systemId}/planets/{planetId}")]
     public ActionResult<PlanetWithoutResource> GetOnePlanet(string systemId, string planetId)
     {
-        var system = _sectorSpecification.Systems.First(system => system.Name == systemId);
+        var system = _sectorService.GetOneSystem(systemId);
         var planets = system.Planets.Select((planet) => new PlanetWithoutResource(Name: planet.Name, Size: planet.Size)).ToList();
         var planet = planets.First(planet => planet.Name == planetId);
         return planet;
@@ -31,7 +31,7 @@ public class PlanetsController : ControllerBase
     [Route("/systems/{systemId}/planets")]
     public ActionResult<IReadOnlyList<PlanetWithoutResource>> GetPlanets(string systemId)
     {
-        var system = _sectorSpecification.Systems.First(system => system.Name == systemId);
+        var system = _sectorService.GetOneSystem(systemId);
         var planets = system.Planets.Select((planet) => new PlanetWithoutResource(Name: planet.Name, Size: planet.Size)).ToList();
         return new (planets);
     }
