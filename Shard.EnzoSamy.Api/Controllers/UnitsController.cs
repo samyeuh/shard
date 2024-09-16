@@ -63,7 +63,7 @@ public class UnitsController : ControllerBase
 
                 if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
                 {
-                    await Task.Delay(timeUntilArrival);
+                    await _clock.Delay(timeUntilArrival);
                 }
             }
 
@@ -130,7 +130,7 @@ public class UnitsController : ControllerBase
         {
             return NotFound($"User or Unit not found: User ID {userId}, Unit ID {unitId}");
         }
-
+        
         var planet = _unitService.GetPlanetForUnit(unit);
         if (planet == null)
         {
