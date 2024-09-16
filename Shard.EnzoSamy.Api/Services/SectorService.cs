@@ -15,7 +15,7 @@ public class SectorService
         return _sectorSpecification.Systems;
     }
 
-    public SystemSpecification GetOneSystem(string systemId)
+    public SystemSpecification? GetOneSystem(string systemId)
     {
         return _sectorSpecification.Systems.First(system => system.Name == systemId);
     }

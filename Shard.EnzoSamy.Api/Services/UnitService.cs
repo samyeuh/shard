@@ -5,12 +5,12 @@ namespace Shard.EnzoSamy.Api;
 public class UnitService
 {
     private readonly UserService _userService;
-    private readonly SectorSpecification _sector;
+    private readonly SectorService _sectorService;
 
-    public UnitService(UserService userService, SectorSpecification sector)
+    public UnitService(UserService userService, SectorService sectorService)
     {
         _userService = userService;
-        _sector = sector;
+        _sectorService = sectorService;
     }
     
     public UnitSpecification? GetUnitForUser(string userId, string unitId)
@@ -23,7 +23,7 @@ public class UnitService
     
     public PlanetSpecification? GetPlanetForUnit(UnitSpecification unit)
     {
-        var system = _sector.Systems.FirstOrDefault(s => s.Name == unit.System);
+        var system = _sectorService.GetOneSystem(unit.System);
         if (system == null) return null;
 
         return system.Planets.FirstOrDefault(p => p.Name == unit.Planet);

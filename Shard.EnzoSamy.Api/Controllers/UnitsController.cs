@@ -23,8 +23,8 @@ public class UnitsController : ControllerBase
         _unitService = unitService;
         _clock = clock;
     }
-    
-    
+
+
     [HttpGet]
     [Route("/users/{userId}/units")]
     public ActionResult<IReadOnlyList<UnitSpecification>> GetUnits(string userId)
@@ -58,9 +58,9 @@ public class UnitsController : ControllerBase
 
             if (estimatedArrivalTime.HasValue)
             {
-                DateTime now = DateTime.UtcNow;
-                TimeSpan timeUntilArrival = estimatedArrivalTime.Value.ToUniversalTime() - now;
-                
+                DateTime now = _clock.Now;
+                TimeSpan timeUntilArrival = estimatedArrivalTime.Value - now;
+
                 if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
                 {
                     await Task.Delay(timeUntilArrival);
@@ -77,8 +77,10 @@ public class UnitsController : ControllerBase
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId,
+        [FromBody] UnitSpecification updatedUnit)
     {
+
         if (unitId != updatedUnit.Id)
         {
             return BadRequest("The unitId in the URL does not match the Id in the body.");
@@ -100,52 +102,41 @@ public class UnitsController : ControllerBase
         unit.Planet = updatedUnit.Planet;
         unit.DestinationSystem = updatedUnit.DestinationSystem;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-        
+
         DateTime currentTime = _clock.Now;
         TimeSpan travelTime = TimeSpan.Zero;
-        
+
         if (unit.System != unit.DestinationSystem)
         {
             travelTime += TimeSpan.FromMinutes(1);
         }
-        
+
         if (unit.Planet != unit.DestinationPlanet)
         {
             travelTime += TimeSpan.FromSeconds(15);
         }
-        
+
         unit.estimatedTimeOfArrival = currentTime + travelTime;
-        
+
         return unit;
     }
-    
+
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}/location")]
-    public async Task<ActionResult<UnitLocation>> GetUnitLocation(string userId, string unitId)
+    public ActionResult<UnitLocation> GetUnitLocation(string userId, string unitId)
     {
         var unit = _unitService.GetUnitForUser(userId, unitId);
         if (unit == null)
         {
             return NotFound($"User or Unit not found: User ID {userId}, Unit ID {unitId}");
         }
-        
-        if (unit.estimatedTimeOfArrival != null)
-        {
-            DateTime currentTime = _clock.Now;
-            TimeSpan timeUntilArrival = unit.estimatedTimeOfArrival.Value - currentTime;
-            
-            if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
-            {
-                await _clock.Delay(timeUntilArrival);
-            }
-        }
-        
+
         var planet = _unitService.GetPlanetForUnit(unit);
         if (planet == null)
         {
             return new UnitLocation(unit.System, null, null);
         }
-        
+
         var resources = _unitService.MapPlanetResources(planet);
 
         return new UnitLocation(unit.System, planet.Name, resources);
