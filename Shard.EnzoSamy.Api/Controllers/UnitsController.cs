@@ -14,6 +14,7 @@ public class UnitsController : ControllerBase
     private readonly UserService _userService;
     private readonly UnitService _unitService;
     private readonly IClock _clock;
+    private TaskCompletionSource<UnitSpecification> _taskCompletionSource = new();
     
 
     public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
@@ -64,7 +65,8 @@ public class UnitsController : ControllerBase
 
                 if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
                 { 
-                    await _clock.Delay(timeUntilArrival);
+                    //await _clock.Delay(timeUntilArrival);
+                    return await _taskCompletionSource.Task;
                 }
             }
 
@@ -78,9 +80,10 @@ public class UnitsController : ControllerBase
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId,
+    public async Task<ActionResult<UnitSpecification>> MoveSystemUnit(string userId, string unitId,
         [FromBody] UnitSpecification updatedUnit)
     {
+        
         if (unitId != updatedUnit.Id)
         {
             return BadRequest("The unitId in the URL does not match the Id in the body.");
@@ -114,8 +117,7 @@ public class UnitsController : ControllerBase
             travelTime += TimeSpan.FromSeconds(15);
         }
         
-        unit.estimatedTimeOfArrival = currentTime + travelTime;
-        
+        unit.estimatedTimeOfArrival = currentTime + travelTime; 
         _clock.CreateTimer(TimeExpiredCallback, unit, travelTime ,TimeSpan.Zero);
         
         return unit;
@@ -150,5 +152,7 @@ public class UnitsController : ControllerBase
         unit.System = unit.DestinationSystem;
         unit.DestinationSystem = null;
         unit.DestinationPlanet = null;
+        
+        _taskCompletionSource.SetResult(unit);
     }
 }
