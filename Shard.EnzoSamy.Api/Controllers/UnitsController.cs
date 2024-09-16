@@ -13,13 +13,15 @@ public class UnitsController : ControllerBase
 {
     private readonly UserService _userService;
     private readonly UnitService _unitService;
+    private readonly IClock _clock;
 
     public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
 
-    public UnitsController(UserService userService, UnitService unitService)
+    public UnitsController(UserService userService, UnitService unitService, IClock clock)
     {
         _userService = userService;
         _unitService = unitService;
+        _clock = clock;
     }
     
     
@@ -41,7 +43,7 @@ public class UnitsController : ControllerBase
 
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> GetOneUnit(string userId, string unitId)
+    public async Task<ActionResult<UnitSpecification>> GetOneUnit(string userId, string unitId)
     {
         var userWithUnits = _userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
         if (userWithUnits == null)
@@ -52,6 +54,19 @@ public class UnitsController : ControllerBase
         var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit != null)
         {
+            DateTime? estimatedArrivalTime = unit.estimatedTimeOfArrival;
+
+            if (estimatedArrivalTime.HasValue)
+            {
+                DateTime now = DateTime.UtcNow;
+                TimeSpan timeUntilArrival = estimatedArrivalTime.Value.ToUniversalTime() - now;
+                
+                if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
+                {
+                    await Task.Delay(timeUntilArrival);
+                }
+            }
+
             return unit;
         }
         else
@@ -85,18 +100,44 @@ public class UnitsController : ControllerBase
         unit.Planet = updatedUnit.Planet;
         unit.DestinationSystem = updatedUnit.DestinationSystem;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-
+        
+        DateTime currentTime = _clock.Now;
+        TimeSpan travelTime = TimeSpan.Zero;
+        
+        if (unit.System != unit.DestinationSystem)
+        {
+            travelTime += TimeSpan.FromMinutes(1);
+        }
+        
+        if (unit.Planet != unit.DestinationPlanet)
+        {
+            travelTime += TimeSpan.FromSeconds(15);
+        }
+        
+        unit.estimatedTimeOfArrival = currentTime + travelTime;
+        
         return unit;
     }
     
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}/location")]
-    public ActionResult<UnitLocation> GetUnitLocation(string userId, string unitId)
+    public async Task<ActionResult<UnitLocation>> GetUnitLocation(string userId, string unitId)
     {
         var unit = _unitService.GetUnitForUser(userId, unitId);
         if (unit == null)
         {
             return NotFound($"User or Unit not found: User ID {userId}, Unit ID {unitId}");
+        }
+        
+        if (unit.estimatedTimeOfArrival != null)
+        {
+            DateTime currentTime = _clock.Now;
+            TimeSpan timeUntilArrival = unit.estimatedTimeOfArrival.Value - currentTime;
+            
+            if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
+            {
+                await _clock.Delay(timeUntilArrival);
+            }
         }
         
         var planet = _unitService.GetPlanetForUnit(unit);

@@ -9,10 +9,9 @@ public class UnitSpecification
     public string Type { get; init; }
     public string System { get; set; }
     public string? Planet { get; set; }
-    
     public string? DestinationSystem { get; set; }
-    
     public string? DestinationPlanet { get; set; }
+    public DateTime? estimatedTimeOfArrival { get; set; }
 
     public UnitSpecification() { }
 
