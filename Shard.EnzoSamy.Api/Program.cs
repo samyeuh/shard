@@ -20,6 +20,7 @@ builder.Services.AddSingleton(provider =>
 });
 
 builder.Services.AddSingleton(new List<UserSpecification>());
+builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton(new List<UserWithUnitSpecification>());
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UnitService>();
