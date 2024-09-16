@@ -14,6 +14,7 @@ public class UnitsController : ControllerBase
     private readonly UserService _userService;
     private readonly UnitService _unitService;
     private readonly IClock _clock;
+    
 
     public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
 
@@ -62,7 +63,7 @@ public class UnitsController : ControllerBase
                 TimeSpan timeUntilArrival = estimatedArrivalTime.Value - now;
 
                 if (timeUntilArrival.TotalSeconds <= 2 && timeUntilArrival.TotalSeconds > 0)
-                {
+                { 
                     await _clock.Delay(timeUntilArrival);
                 }
             }
@@ -80,7 +81,6 @@ public class UnitsController : ControllerBase
     public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId,
         [FromBody] UnitSpecification updatedUnit)
     {
-
         if (unitId != updatedUnit.Id)
         {
             return BadRequest("The unitId in the URL does not match the Id in the body.");
@@ -97,9 +97,7 @@ public class UnitsController : ControllerBase
         {
             return NotFound($"Unit with ID {unitId} not found.");
         }
-
-        unit.System = updatedUnit.System;
-        unit.Planet = updatedUnit.Planet;
+        
         unit.DestinationSystem = updatedUnit.DestinationSystem;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
 
@@ -115,9 +113,11 @@ public class UnitsController : ControllerBase
         {
             travelTime += TimeSpan.FromSeconds(15);
         }
-
+        
         unit.estimatedTimeOfArrival = currentTime + travelTime;
-
+        
+        _clock.CreateTimer(TimeExpiredCallback, unit, travelTime ,TimeSpan.Zero);
+        
         return unit;
     }
 
@@ -140,5 +140,15 @@ public class UnitsController : ControllerBase
         var resources = _unitService.MapPlanetResources(planet);
 
         return new UnitLocation(unit.System, planet.Name, resources);
+    }
+
+    private void TimeExpiredCallback(object state)
+    {
+        var unit = (UnitSpecification)state;
+        unit.estimatedTimeOfArrival = null;
+        unit.Planet = unit.DestinationPlanet;
+        unit.System = unit.DestinationSystem;
+        unit.DestinationSystem = null;
+        unit.DestinationPlanet = null;
     }
 }
