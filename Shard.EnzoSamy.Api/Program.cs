@@ -1,4 +1,5 @@
 using Shard.EnzoSamy.Api;
+using Shard.EnzoSamy.Api.Services;
 using Shard.Shared.Core;
 
 var builder = WebApplication.CreateBuilder(args);

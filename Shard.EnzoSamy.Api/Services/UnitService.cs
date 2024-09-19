@@ -1,3 +1,4 @@
+using Shard.EnzoSamy.Api.Services;
 using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api;
