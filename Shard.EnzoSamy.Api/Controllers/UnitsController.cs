@@ -74,18 +74,8 @@ public class UnitsController(
             return NotFound($"Unit with ID {unitId} not found.");
         }
         
-        if (!string.IsNullOrEmpty(updatedUnit.DestinationSystem))
-        {
-            unit.DestinationSystem = updatedUnit.DestinationSystem;
-            logger.LogInformation($"Unit moved from {unit.System} to {unit.DestinationSystem}");
-
-        }
-
-        if (!string.IsNullOrEmpty(updatedUnit.DestinationPlanet))
-        {
-            unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-        }
-
+        unit.DestinationSystem = updatedUnit.DestinationSystem;
+        unit.DestinationPlanet = updatedUnit.DestinationPlanet;
         unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);
 
         unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
@@ -112,6 +102,7 @@ public class UnitsController(
         var resources = unitService.MapPlanetResources(planet);
 
         logger.LogInformation($"Unit System : {unit.System}, Planet : {planet.Name}, Resources : {resources}");
-        return new UnitLocation(unit.System, planet.Name, resources);
+        
+        return unit.Type == "scout" ? new UnitLocation(unit.System, planet.Name, resources) : new UnitLocation(unit.System, planet.Name, null);
     }
 }

@@ -48,7 +48,8 @@ public class UnitSpecification
 
     private void ArriveAtDestination()
     {
-        System = DestinationSystem;
+        if(DestinationSystem is not null) 
+            System = DestinationSystem;
         Planet = DestinationPlanet;
         DestinationSystem = null;
         DestinationPlanet = null;
