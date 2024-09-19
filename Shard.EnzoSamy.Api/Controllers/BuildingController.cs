@@ -9,9 +9,12 @@ namespace Shard.EnzoSamy.Api.Controllers;
 [ApiController]
 public class BuildingController(UserService userService) : ControllerBase
 {
+    
+    public record BuildingWithoutBuilderId(string planet, string system, string type);
+    
     [HttpPost]
     [Route("/users/{userId}/buildings")]
-    public ActionResult<BuildingSpecification> BuildMineOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
+    public ActionResult<BuildingWithoutBuilderId> BuildMineOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
@@ -21,14 +24,19 @@ public class BuildingController(UserService userService) : ControllerBase
         var userUnit = userService.GetUnitsForUser(userId);
         if (userUnit is null) return NotFound("User dont have any units.");
         
-        var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Id == buildingSpecification.Id);
+        var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Type == "builder");
 
-        if (userBuilderUnit is null) return BadRequest("Invalid builder ID.");
+        if (userBuilderUnit is null) return BadRequest("User dont have any builders.");
+        if (userBuilderUnit.Planet is null) return BadRequest("User dont have any planet.");
+        
+        if (userBuilderUnit.Id != buildingSpecification.BuilderId) return BadRequest("BuilderID dont match unit id.");
 
         if (userBuilderUnit.Planet is null) return BadRequest("An error occured.");
         
-        var specification = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System);
-        return specification;
+        if (buildingSpecification.Type != "mine") return BadRequest("Invalid type.");
+        
+        var specification = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId);
+        return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type);
     }
 
 }
