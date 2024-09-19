@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Services;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
 
 namespace Shard.EnzoSamy.Api.Controllers;
@@ -15,20 +16,19 @@ public class BuildingController(UserService userService) : ControllerBase
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
         var user = userService.FindUser(userId);
-        if (user == null) return NotFound($"User with ID {userId} not found.");
+        if (user is null) return NotFound($"User with ID {userId} not found.");
 
-        var userBuilderUnit = userService.GetUnitsForUser(userId)
-            .FirstOrDefault(unit => unit.Type == "builder");
+        var userUnit = userService.GetUnitsForUser(userId);
+        if (userUnit is null) return NotFound("User dont have any units.");
+        
+        var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Id == buildingSpecification.Id);
 
-        if (userBuilderUnit == null) return BadRequest("Invalid builder ID.");
+        if (userBuilderUnit is null) return BadRequest("Invalid builder ID.");
 
-        if (userBuilderUnit.Planet != null)
-        {
-            var specification = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System);
-            return specification;
-        }
-
-        return BadRequest("An error occured.");
+        if (userBuilderUnit.Planet is null) return BadRequest("An error occured.");
+        
+        var specification = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System);
+        return specification;
     }
 
 }
