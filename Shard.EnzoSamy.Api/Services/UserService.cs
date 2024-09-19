@@ -1,4 +1,5 @@
-﻿using Shard.Shared.Core;
+﻿using Shard.EnzoSamy.Api.Specifications;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
 public class UserService

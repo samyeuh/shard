@@ -1,21 +1,10 @@
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Specifications;
 
-public class BuildingSpecification
+public class BuildingSpecification(string type, string planet, string system)
 {
     
-    public string Id { get; set; }
-    public string Type { get; set; }
-    public string Planet { get; set; }
-    public string System { get; set; }
-
-    public Random random;
-    public BuildingSpecification(string type, string planet, string system)
-    {
-        random = new Random();
-        Id = Guid.NewGuid().ToString();
-        Type = type;
-        Planet = planet;
-        System = system;
-    }
-    
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Type { get; set; } = type;
+    public string? Planet { get; set; } = planet;
+    public string? System { get; set; } = system;
 }

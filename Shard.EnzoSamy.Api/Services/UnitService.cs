@@ -1,7 +1,7 @@
-using Shard.EnzoSamy.Api.Services;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Services;
 
 public class UnitService
 {
@@ -25,16 +25,14 @@ public class UnitService
     public PlanetSpecification? GetPlanetForUnit(UnitSpecification unit)
     {
         var system = _sectorService.GetOneSystem(unit.System);
-        if (system == null) return null;
-
         return system.Planets.FirstOrDefault(p => p.Name == unit.Planet);
     }
     
-    public Dictionary<string, int>? MapPlanetResources(PlanetSpecification planet)
+    public Dictionary<string, int> MapPlanetResources(PlanetSpecification planet)
     {
         return planet.ResourceQuantity.ToDictionary(
             resource => resource.Key.ToString().ToLower(),
-            resource => (int)resource.Value
+            resource => resource.Value
         );
     }
     
@@ -46,11 +44,10 @@ public class UnitService
             travelTime += TimeSpan.FromMinutes(1);
         }
 
-        if (unit.DestinationPlanet != null)
-        {
-            travelTime += TimeSpan.FromSeconds(15);
-            unit.Planet = null;
-        }
+        if (unit.DestinationPlanet == null) return currentTime + travelTime;
+        
+        travelTime += TimeSpan.FromSeconds(15);
+        unit.Planet = null;
         return currentTime + travelTime;
     }
     

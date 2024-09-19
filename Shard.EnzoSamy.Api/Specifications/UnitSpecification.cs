@@ -1,7 +1,6 @@
-﻿using System.Numerics;
-using Shard.Shared.Core;
+﻿using Shard.Shared.Core;
 
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UnitSpecification
 {
@@ -12,8 +11,8 @@ public class UnitSpecification
     public string? DestinationSystem { get; set; }
     public string? DestinationPlanet { get; set; }
     public DateTime? EstimatedTimeOfArrival { get; set; }
-    public Task? Arrive { get; private set; }
-    public Task? ArriveMinus2Sec { get; private set; }
+    private Task? Arrive { get; set; }
+    private Task? ArriveMinus2Sec { get; set; }
     private IClock _clock;
 
     public UnitSpecification() { }
@@ -55,7 +54,7 @@ public class UnitSpecification
         DestinationPlanet = null;
         EstimatedTimeOfArrival = null;
 
-        if (Arrive != null && !Arrive.IsCompleted)
+        if (Arrive is { IsCompleted: false })
         {
             Arrive = Task.CompletedTask;
         }

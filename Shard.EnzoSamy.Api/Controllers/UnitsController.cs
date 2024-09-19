@@ -1,7 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Services;
-using Shard.EnzoSamy.Api.Utilities;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
 
@@ -100,6 +99,9 @@ public class UnitsController(
             logger.LogInformation($"Unit System : {unit.System}, Planet : {planet?.Name}, Estimated Time : {unit.EstimatedTimeOfArrival}");
             return new UnitLocation(unit.System, planet?.Name, null);
         }
+
+        if (planet == null) return new UnitLocation(unit.System, null, null);
+        
         var resources = unitService.MapPlanetResources(planet);
 
         logger.LogInformation($"Unit System : {unit.System}, Planet : {planet.Name}, Resources : {resources}");

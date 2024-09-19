@@ -1,4 +1,5 @@
-﻿using Shard.Shared.Core;
+﻿using Shard.EnzoSamy.Api.Specifications;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api;
 
@@ -8,7 +9,7 @@ public class UserWithUnitSpecification
     public string Pseudo { get; set; }
     public List<UnitSpecification> Units { get; set; }
 
-    private string[] typeList = new[] { "scout", "builder" };
+    private readonly string[] _typeList = new[] { "scout", "builder" };
     
     public UserWithUnitSpecification()
     { }
@@ -31,8 +32,8 @@ public class UserWithUnitSpecification
 
     private List<UnitSpecification> Generate(Random random, SystemSpecification system)
     {
-        return Enumerable.Range(1, typeList.Count())
-            .Select(i => new UnitSpecification(random, system, typeList[i%2]))
+        return Enumerable.Range(1, _typeList.Count())
+            .Select(i => new UnitSpecification(random, system, _typeList[i%2]))
             .ToList();
     }
 }
