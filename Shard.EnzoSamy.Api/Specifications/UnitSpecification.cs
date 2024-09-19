@@ -1,4 +1,5 @@
-﻿using Shard.Shared.Core;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Specifications;
 
@@ -23,8 +24,7 @@ public class UnitSpecification
         Type = type;
         SystemSpecification systemSpecification = system;
         System = systemSpecification.Name;
-        IReadOnlyList<PlanetSpecification> planetList = systemSpecification.Planets.ToList();
-        Planet = planetList[random.Next(planetList.Count)].Name;
+        Planet = null;
     }
 
     public void StartTravel(string destinationSystem, string destinationPlanet, DateTime estimatedArrivalTime, IClock clock)

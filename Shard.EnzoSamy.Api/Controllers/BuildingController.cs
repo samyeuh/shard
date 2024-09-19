@@ -25,6 +25,8 @@ public class BuildingController(UserService userService) : ControllerBase
         if (userUnit is null) return NotFound("User dont have any units.");
         
         var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Type == "builder");
+        
+        
 
         if (userBuilderUnit is null) return BadRequest("User dont have any builders.");
         if (userBuilderUnit.Planet is null) return BadRequest("User dont have any planet.");
