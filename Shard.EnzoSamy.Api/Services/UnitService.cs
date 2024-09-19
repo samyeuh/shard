@@ -36,4 +36,21 @@ public class UnitService
             resource => (int)resource.Value
         );
     }
+    
+    public DateTime CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime)
+    {
+        var travelTime = TimeSpan.Zero;
+        if (unit.System != unit.DestinationSystem && unit.DestinationSystem != null)
+        {
+            travelTime += TimeSpan.FromMinutes(1);
+        }
+
+        if (unit.DestinationPlanet != null)
+        {
+            travelTime += TimeSpan.FromSeconds(15);
+            unit.Planet = null;
+        }
+        return currentTime + travelTime;
+    }
+    
 }
