@@ -1,5 +1,6 @@
 using Shard.EnzoSamy.Api;
 using Shard.EnzoSamy.Api.Services;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddSingleton(new List<UserSpecification>());
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton(new List<UserWithUnitSpecification>());
+builder.Services.AddSingleton(new List<BuildingSpecification>());
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SectorService>();
 builder.Services.AddScoped<UnitService>();
