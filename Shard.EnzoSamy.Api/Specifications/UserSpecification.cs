@@ -8,10 +8,6 @@ public class UserSpecification
     public UserSpecification()
     {
         Id = Guid.NewGuid().ToString();
-    }
-
-    public UserSpecification(Random random) : this()
-    {
-        Pseudo = random.NextGuid().ToString();
+        Pseudo = Guid.NewGuid().ToString();
     }
 }
