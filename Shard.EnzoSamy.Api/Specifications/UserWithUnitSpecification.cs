@@ -1,20 +1,16 @@
-﻿using Shard.EnzoSamy.Api.Specifications;
-using Shard.Shared.Core;
+﻿using Shard.Shared.Core;
 
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UserWithUnitSpecification
 {
     public string Id { get; set; }
-    public string Pseudo { get; set; }
+    private string Pseudo { get; set; }
     public List<UnitSpecification> Units { get; set; }
 
     private readonly string[] _typeList = new[] { "scout", "builder" };
-    
-    public UserWithUnitSpecification()
-    { }
 
-    public UserWithUnitSpecification(string id, string pseudo, List<UnitSpecification> units)
+    private UserWithUnitSpecification(string id, string pseudo, List<UnitSpecification> units)
     {
         Id = id;
         Pseudo = pseudo;
@@ -23,7 +19,7 @@ public class UserWithUnitSpecification
     
     public UserWithUnitSpecification(string id, string pseudo, SystemSpecification system, List<UserWithUnitSpecification> userWithUnit)
     {
-        Random random = new Random();
+        var random = new Random();
         Id = id;
         Pseudo = pseudo;
         Units = Generate(random, system);

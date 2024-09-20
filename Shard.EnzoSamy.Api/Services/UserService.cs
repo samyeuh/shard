@@ -27,10 +27,10 @@ public class UserService
 
     public List<UnitSpecification>? GetUnitsForUser(string userId)
     {
-        UserSpecification? user = FindUser(userId);
+        var user = FindUser(userId);
         if (user == null) return null;
 
-        UserWithUnitSpecification? userWithUnits = GetUserWithUnits(userId);
+        var userWithUnits = GetUserWithUnits(userId);
         return userWithUnits == null ? new UserWithUnitSpecification(user.Id, user.Pseudo, _sector.Systems[_indexSystem], _usersWithUnit).Units : userWithUnits.Units;
     }
     
@@ -46,7 +46,7 @@ public class UserService
     
     public UserWithUnitSpecification? GetUserWithUnits(string userId)
     {
-        UserWithUnitSpecification? userWithUnit = _usersWithUnit.FirstOrDefault(u => u.Id == userId);
+        var userWithUnit = _usersWithUnit.FirstOrDefault(u => u.Id == userId);
         return userWithUnit;
     }
     

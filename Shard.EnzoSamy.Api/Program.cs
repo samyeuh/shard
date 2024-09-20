@@ -13,13 +13,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Enregistrer SectorSpecification comme singleton
-builder.Services.AddSingleton(provider =>
+builder.Services.AddSingleton(provider => new MapGenerator(new MapGeneratorOptions()
 {
-    return new MapGenerator(new MapGeneratorOptions()
-    {
-        Seed = "EnzoSamy"
-    }).Generate();
-});
+    Seed = "EnzoSamy"
+}).Generate());
 
 builder.Services.AddSingleton(new List<UserSpecification>());
 builder.Services.AddSingleton<IClock, SystemClock>();

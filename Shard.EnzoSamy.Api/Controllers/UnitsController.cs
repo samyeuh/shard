@@ -12,11 +12,11 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class UnitsController(
     UserService userService,
     UnitService unitService,
-    IClock clock,
+    IClock? clock,
     ILogger<UnitsController> logger)
     : ControllerBase
 {
-    public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
+    public record UnitLocation(string System, string? Planet, IReadOnlyDictionary<string, int>? ResourcesQuantity);
 
 
     [HttpGet]

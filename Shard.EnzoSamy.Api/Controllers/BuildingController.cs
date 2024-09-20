@@ -10,7 +10,7 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class BuildingController(UserService userService, List<BuildingSpecification> listBuildingSpecification) : ControllerBase
 {
     
-    public record BuildingWithoutBuilderId(string planet, string system, string type);
+    public record BuildingWithoutBuilderId(string Planet, string System, string Type);
     
     [HttpPost]
     [Route("/users/{userId}/buildings")]

@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic.CompilerServices;
 using Shard.EnzoSamy.Api.Services;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
 
 namespace Shard.EnzoSamy.Api.Controllers;
@@ -10,17 +11,8 @@ namespace Shard.EnzoSamy.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 
-public class UsersController : ControllerBase
+public class UsersController(List<UserSpecification> users, UserService userService) : ControllerBase
 {
-    private List<UserSpecification> _users;
-    private readonly UserService _userService;
-    
-    public UsersController(List<UserSpecification> users, UserService userService)
-    {
-        _users = users;
-        _userService = userService;
-    }
-    
     [HttpPut]
     [Route("/users/{userId}")]
     public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
@@ -37,20 +29,20 @@ public class UsersController : ControllerBase
 
         try
         {
-            int index = _userService.FindUserIndex(userId);
+            var index = userService.FindUserIndex(userId);
 
             if (index == -1)
             {
-                _users.Add(updatedUser);
+                users.Add(updatedUser);
             }
             else
             {
-                _users[index] = updatedUser;
+                users[index] = updatedUser;
             }
 
             return updatedUser; 
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return StatusCode(500, "An error occurred while updating the user.");
         }
@@ -63,16 +55,14 @@ public class UsersController : ControllerBase
     {
         try
         {
-            int index = _userService.FindUserIndex(userId);
+            var index = userService.FindUserIndex(userId);
             
             if (index != -1)
             {
-                return  _users[index]; 
+                return  users[index]; 
             }
-            else
-            {
-                return NotFound($"User with ID {userId} not found. Actual users : {_users}"); 
-            }
+
+            return NotFound($"User with ID {userId} not found. Actual users : {users}");
         }
         catch (Exception e)
         {

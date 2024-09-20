@@ -14,7 +14,7 @@ public class UnitSpecification
     public DateTime? EstimatedTimeOfArrival { get; set; }
     private Task? Arrive { get; set; }
     private Task? ArriveMinus2Sec { get; set; }
-    private IClock _clock;
+    private IClock? _clock;
 
     public UnitSpecification() { }
 
@@ -27,7 +27,7 @@ public class UnitSpecification
         Planet = null;
     }
 
-    public void StartTravel(string destinationSystem, string destinationPlanet, DateTime estimatedArrivalTime, IClock clock)
+    public void StartTravel(string destinationSystem, string destinationPlanet, DateTime estimatedArrivalTime, IClock? clock)
     {
         DestinationSystem = destinationSystem;
         DestinationPlanet = destinationPlanet;
@@ -62,6 +62,7 @@ public class UnitSpecification
     
     private TimeSpan CalculateEstimatedArrivalTime(DateTime? estimatedArrivalTime)
     {
+        if (_clock == null) return TimeSpan.Zero;
         var now = _clock.Now;
         var timeUntilArrival = estimatedArrivalTime - now;
         return timeUntilArrival ?? TimeSpan.Zero;

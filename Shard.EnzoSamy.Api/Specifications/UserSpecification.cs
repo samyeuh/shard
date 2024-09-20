@@ -1,8 +1,4 @@
-using System.CodeDom.Compiler;
-using System.Text.Json.Serialization;
-using Shard.Shared.Core;
-
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UserSpecification
 {
