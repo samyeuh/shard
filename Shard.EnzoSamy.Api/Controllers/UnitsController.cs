@@ -47,6 +47,14 @@ public class UnitsController(
 
         var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit == null) return NotFound($"Unit with ID {unitId} not found.");
+        try
+        {
+            await unit.WaitIfArrived();
+        }
+        catch (OperationCanceledException)
+        {
+            return StatusCode(499, "Request canceled");
+        }
         await unit.WaitIfArrived();
         return unit;
 

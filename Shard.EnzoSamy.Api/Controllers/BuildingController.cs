@@ -22,16 +22,16 @@ public class BuildingController(UserService userService, List<BuildingSpecificat
         if (user is null) return NotFound($"User with ID {userId} not found.");
 
         var userUnit = userService.GetUnitsForUser(userId);
-        if (userUnit is null) return NotFound("User dont have any units.");
+        if (userUnit == null || !userUnit.Any()) return NotFound("User dont have any units.");
         
         var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Type == "builder");
         
         
 
         if (userBuilderUnit is null) return BadRequest("User dont have any builders.");
-        if (userBuilderUnit.Planet is null) return BadRequest("User dont have any planet.");
+        if (string.IsNullOrEmpty(userBuilderUnit.Planet)) return BadRequest("User dont have any planet.");
         
-        if (userBuilderUnit.Id != buildingSpecification.BuilderId) return BadRequest("BuilderID dont match unit id.");
+        if (userBuilderUnit.Id != buildingSpecification.BuilderId) return BadRequest("Builder ID doesn't match unit id.");
 
         if (userBuilderUnit.Planet is null) return BadRequest("An error occured.");
         
