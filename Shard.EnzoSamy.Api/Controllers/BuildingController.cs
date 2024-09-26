@@ -48,17 +48,26 @@ public class BuildingController(UserService userService, IClock clock) : Control
     }
     
     [HttpGet]
-    [Route("/users/{userId}/buildings/{buildingId}")]
-    public async Task<ActionResult<BuildingSpecification>> BuildMineOnPlanet(string userId, string buildingId)
+    [Route("/users/{userId}/buildings")]
+    public ActionResult<List<BuildingSpecification>> GetMines(string userId, string buildingId)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
         var user = userService.FindUser(userId);
         if (user is null) return NotFound($"User with ID {userId} not found.");
+        
+        return user.Buildings;
+    }
+    
+    [HttpGet]
+    [Route("/users/{userId}/buildings/{buildingId}")]
+    public async Task<ActionResult<BuildingSpecification>> GetMine(string userId, string buildingId)
+    {
+        if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
-        var userUnit = userService.GetUnitsForUser(userId);
-        if (userUnit == null || userUnit.Count == 0) return NotFound("User dont have any units.");
-
+        var user = userService.FindUser(userId);
+        if (user is null) return NotFound($"User with ID {userId} not found.");
+        //Check si l'unit est encore sur la planet sinon interrompre la construction.
         var building = user.Buildings.FirstOrDefault(building => building.Id == buildingId);
         if(building is null) return BadRequest("User dont have any buildings.");
 

@@ -10,6 +10,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     public string BuilderId { get; set; } = builderId;
     public string? Planet { get; set; } = planet;
     public string? System { get; set; } = system;
+    public DateTime? EstimatedBuildTime { get; set; }
     public bool IsBuilt { get; set; }
     public string? ResourceCategory { get; set; } = resourceCategory;
     private Task? _startBuildTask;
@@ -19,6 +20,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     public void StartBuild(IClock clock)
     {
         _clock = clock;
+        EstimatedBuildTime = _clock.Now + TimeSpan.FromMinutes(5);
         _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5)).ContinueWith(_ => FinishBuild());
         _startBuildTaskMinus2Seconds = _clock.Delay(TimeSpan.FromMinutes(5) - TimeSpan.FromSeconds(2));
     }
@@ -32,15 +34,12 @@ public class BuildingSpecification(string type, string planet, string system, st
     private void FinishBuild()
     {
         IsBuilt = true;
+        EstimatedBuildTime = null;
         if (_startBuildTask is { IsCompleted: false })
         {
             _startBuildTask = Task.CompletedTask;
         }
     }
     
-    private TimeSpan CalculateEstimatedArrivalTime(DateTime? estimatedArrivalTime)
-    {
-        return TimeSpan.Zero;
-    }
 
 }
