@@ -10,7 +10,7 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class BuildingController(UserService userService, List<BuildingSpecification> listBuildingSpecification) : ControllerBase
 {
     
-    public record BuildingWithoutBuilderId(string Planet, string System, string Type);
+    public record BuildingWithoutBuilderId(string Planet, string System, string Type, string resourceCategory);
     
     [HttpPost]
     [Route("/users/{userId}/buildings")]
@@ -37,8 +37,8 @@ public class BuildingController(UserService userService, List<BuildingSpecificat
         
         if (buildingSpecification.Type != "mine") return BadRequest("Invalid type.");
         
-        listBuildingSpecification.Add(new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId));
-        return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type);
+        listBuildingSpecification.Add(new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory));
+        return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type, buildingSpecification.ResourceCategory);
     }
 
 }
