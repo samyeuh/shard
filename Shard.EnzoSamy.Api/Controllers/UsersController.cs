@@ -18,9 +18,9 @@ public class UsersController : ControllerBase
 
     [HttpPut]
     [Route("/users/{userId}")]
-    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
+    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification newUser)
     {
-        if (userId != updatedUser.Id)
+        if (userId != newUser.Id)
         {
             return BadRequest("The userId in the URL does not match the Id in the body.");
         }
@@ -32,18 +32,9 @@ public class UsersController : ControllerBase
 
         try
         {
-            var index = _userService.FindUserIndex(userId);
+            var user = _userService.CreateUser(newUser);
 
-            if (index == -1)
-            {
-                _users.Add(updatedUser);
-            }
-            else
-            {
-                _users[index] = updatedUser;
-            }
-
-            return updatedUser;
+            return user;
         }
         catch (Exception)
         {

@@ -19,21 +19,11 @@ public class UserSpecification
         Pseudo = Guid.NewGuid().ToString();
         Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
         DateOfCreation = DateTime.Now.ToShortDateString();
-        ResourcesQuantity = new Dictionary<string, int?>();
-        Units = new List<UnitSpecification>();
-    }
-    
-    public UserSpecification(SectorSpecification sector)
-    {
-        Id = Guid.NewGuid().ToString();
-        Pseudo = Guid.NewGuid().ToString();
-        Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
-        DateOfCreation = DateTime.Now.ToShortDateString();
-        ResourcesQuantity = InitializeResources();
-        Units = GenerateUnits(new Random(), sector);
+        ResourcesQuantity = _initializeResources();
+        Units = [];
     }
 
-    private Dictionary<string, int?> InitializeResources()
+    private Dictionary<string, int?> _initializeResources()
     {
         var resourceQuantities = new Dictionary<string, int?>();
 
@@ -58,12 +48,5 @@ public class UserSpecification
         }
 
         return resourceQuantities;
-    }
-
-    private List<UnitSpecification> GenerateUnits(Random random, SectorSpecification sector)
-    {
-        return Enumerable.Range(1, _typeList.Length)
-            .Select(i => new UnitSpecification(random, sector.Systems[random.Next(sector.Systems.Count)], _typeList[i % 2]))
-            .ToList();
     }
 }

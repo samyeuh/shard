@@ -15,6 +15,24 @@ public class UserService
         _sector = sector;
     }
 
+    public UserSpecification CreateUser(UserSpecification newUser)
+    {
+        var user = new UserSpecification();
+        user.Id = newUser.Id;
+        user.Pseudo = newUser.Pseudo;
+        user.Units = _generateUnits();
+        _users.Add(user);
+        return user;
+    }
+    
+    private List<UnitSpecification> _generateUnits()
+    {
+        var system = _sector.Systems.FirstOrDefault();
+        var unitScout = new UnitSpecification(system, "scout");
+        var unitBuilder = new UnitSpecification(system, "builder");
+        return [unitScout, unitBuilder];
+    }
+
     public UserSpecification? FindUser(string userId)
     {
         return _users.FirstOrDefault(user => user.Id == userId);
