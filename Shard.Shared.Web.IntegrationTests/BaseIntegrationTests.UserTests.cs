@@ -91,7 +91,7 @@ public partial class BaseIntegrationTests<TEntryPoint, TWebApplicationFactory>
 
     [Fact]
     [Trait("grading", "true")]
-    [Trait("version", "3")]
+    [Trait("version", "4")]
     public async Task CanFetchResourcesFromNewlyCreatedUser()
     {
         using var client = CreateClient();
@@ -110,7 +110,7 @@ public partial class BaseIntegrationTests<TEntryPoint, TWebApplicationFactory>
     [InlineData("titanium", 0)]
     [InlineData("water", 50)]
     [Trait("grading", "true")]
-    [Trait("version", "3")]
+    [Trait("version", "4")]
     public async Task GivesBasicResourcesToNewUser(string resourceName, int resourceQuantity)
     {
         using var client = CreateClient();
