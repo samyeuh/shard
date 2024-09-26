@@ -49,19 +49,19 @@ public class BuildingController(UserService userService, IClock clock) : Control
     
     [HttpGet]
     [Route("/users/{userId}/buildings")]
-    public ActionResult<List<BuildingSpecification>> GetMines(string userId, string buildingId)
+    public ActionResult<List<BuildingSpecification>> GetBuildings(string userId)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
         var user = userService.FindUser(userId);
         if (user is null) return NotFound($"User with ID {userId} not found.");
-        
+
         return user.Buildings;
     }
     
     [HttpGet]
     [Route("/users/{userId}/buildings/{buildingId}")]
-    public async Task<ActionResult<BuildingSpecification>> GetMine(string userId, string buildingId)
+    public async Task<ActionResult<BuildingSpecification>> GetBuilding(string userId, string buildingId)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
