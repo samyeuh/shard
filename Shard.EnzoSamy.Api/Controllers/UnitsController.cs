@@ -77,6 +77,16 @@ public class UnitsController(
             return NotFound($"Unit with ID {unitId} not found.");
         }
         
+        var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
+        if (buildingNotConstruct != null)
+        {
+            if (unit.Planet != updatedUnit.DestinationPlanet)
+            {
+                logger.LogInformation($"Cancelling building construction for building {buildingNotConstruct.Id} as the builder is moving away.");
+                user.Buildings.Remove(buildingNotConstruct);
+            }
+        }
+        
         unit.DestinationSystem = updatedUnit.DestinationSystem;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
         unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);

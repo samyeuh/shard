@@ -32,8 +32,6 @@ public class UnitService(UserService userService, SectorService sectorService)
         {
             travelTime += TimeSpan.FromMinutes(1);
         }
-
-        if (unit.DestinationPlanet == null) return currentTime + travelTime;
         
         travelTime += TimeSpan.FromSeconds(15);
         unit.Planet = null;

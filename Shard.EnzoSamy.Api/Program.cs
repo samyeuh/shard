@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Shard.EnzoSamy.Api;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
@@ -12,11 +13,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Enregistrer SectorSpecification comme singleton
-builder.Services.AddSingleton(provider => new MapGenerator(new MapGeneratorOptions()
+builder.Services.Configure<MapGeneratorOptions>(
+    builder.Configuration.GetSection("shard:MapGenerator"));
+
+builder.Services.AddSingleton(provider =>
 {
-    Seed = "EnzoSamy"
-}).Generate());
+    var options = provider.GetRequiredService<IOptions<MapGeneratorOptions>>().Value;
+    return new MapGenerator(options).Generate();
+});
 
 builder.Services.AddSingleton(new List<UserSpecification>());
 builder.Services.AddSingleton<IClock, SystemClock>();

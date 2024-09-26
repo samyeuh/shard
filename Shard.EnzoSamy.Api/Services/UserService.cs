@@ -36,11 +36,6 @@ public class UserService
         return _users.FirstOrDefault(user => user.Id == userId);
     }
 
-    public int FindUserIndex(string userId)
-    {
-        return _users.FindIndex(user => user.Id == userId);
-    }
-
     public List<UnitSpecification>? GetUnitsForUser(string userId)
     {
         var user = FindUser(userId);

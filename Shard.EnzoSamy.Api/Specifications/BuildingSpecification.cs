@@ -15,6 +15,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     public string? ResourceCategory { get; set; } = resourceCategory;
     private Task? _startBuildTask;
     private Task? _startBuildTaskMinus2Seconds;
+    private Task? _startExtract1Minutes;
     private IClock _clock;
     
     public void StartBuild(IClock clock)
@@ -39,6 +40,12 @@ public class BuildingSpecification(string type, string planet, string system, st
         {
             _startBuildTask = Task.CompletedTask;
         }
+    }
+
+    private void ExtractContinuously()
+    {
+        
+        
     }
     
 

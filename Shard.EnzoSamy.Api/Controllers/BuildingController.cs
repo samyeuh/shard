@@ -67,9 +67,8 @@ public class BuildingController(UserService userService, IClock clock) : Control
 
         var user = userService.FindUser(userId);
         if (user is null) return NotFound($"User with ID {userId} not found.");
-        //Check si l'unit est encore sur la planet sinon interrompre la construction.
         var building = user.Buildings.FirstOrDefault(building => building.Id == buildingId);
-        if(building is null) return BadRequest("User dont have any buildings.");
+        if(building is null) return NotFound("User dont have the specified building.");
 
         await building.WaitIfBuild();
         return building;
