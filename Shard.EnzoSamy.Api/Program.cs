@@ -20,7 +20,6 @@ builder.Services.AddSingleton(provider => new MapGenerator(new MapGeneratorOptio
 
 builder.Services.AddSingleton(new List<UserSpecification>());
 builder.Services.AddSingleton<IClock, SystemClock>();
-builder.Services.AddSingleton(new List<BuildingSpecification>());
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SectorService>();
 builder.Services.AddScoped<UnitService>();

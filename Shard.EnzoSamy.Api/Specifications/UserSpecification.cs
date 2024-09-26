@@ -11,6 +11,8 @@ public class UserSpecification
     public Dictionary<string, int?>? ResourcesQuantity { get; set; }
     public List<UnitSpecification> Units { get; set; }
     
+    public List<BuildingSpecification> Buildings { get; set; }
+    
 
     public UserSpecification(string id, string pseudo, List<UnitSpecification> units)
     {
@@ -20,6 +22,7 @@ public class UserSpecification
         DateOfCreation = DateTime.Now.ToShortDateString();
         ResourcesQuantity = _initializeResources();
         Units = units;
+        Buildings = [];
     }
 
     private Dictionary<string, int?> _initializeResources()
