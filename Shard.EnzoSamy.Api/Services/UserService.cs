@@ -7,8 +7,6 @@ public class UserService
 {
     private readonly List<UserSpecification> _users;
     private readonly SectorSpecification _sector;
-    private readonly Random _random = new Random();
-
     public UserService(List<UserSpecification> users, SectorSpecification sector)
     {
         _users = users;
@@ -17,12 +15,8 @@ public class UserService
 
     public UserSpecification CreateUser(UserSpecification newUser)
     {
-        var user = new UserSpecification
-        {
-            Id = newUser.Id,
-            Pseudo = newUser.Pseudo,
-            Units = _generateUnits()
-        };
+        var generatedUnits = _generateUnits();
+        var user = new UserSpecification(newUser.Id, newUser.Pseudo, generatedUnits);
         _users.Add(user);
         return user;
     }

@@ -8,17 +8,18 @@ public class UserSpecification
     public string Id { get; set; }
     public string? Pseudo { get; set; }
     public string DateOfCreation { get; set; }
-    public Dictionary<string, int?> ResourcesQuantity { get; set; }
+    public Dictionary<string, int?>? ResourcesQuantity { get; set; }
     public List<UnitSpecification> Units { get; set; }
+    
 
-    public UserSpecification()
+    public UserSpecification(string id, string pseudo, List<UnitSpecification> units)
     {
-        Id = Guid.NewGuid().ToString();
-        Pseudo = Guid.NewGuid().ToString();
+        Id = id;
+        Pseudo = pseudo;
         Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
         DateOfCreation = DateTime.Now.ToShortDateString();
         ResourcesQuantity = _initializeResources();
-        Units = [];
+        Units = units;
     }
 
     private Dictionary<string, int?> _initializeResources()
