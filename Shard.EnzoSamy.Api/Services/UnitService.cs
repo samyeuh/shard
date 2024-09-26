@@ -5,11 +5,11 @@ namespace Shard.EnzoSamy.Api.Services;
 
 public class UnitService(UserService userService, SectorService sectorService)
 {
-    public UnitSpecification? GetUnitForUser(string userId, string unitId)
+    /*public UnitSpecification? GetUnitForUser(string userId, string unitId)
     {
         var userWithUnit = userService.GetUsersWithUnit().Find(u => u.Id == userId);
         return userWithUnit?.Units.Find(u => u.Id == unitId);
-    }
+    }*/
     
     public PlanetSpecification? GetPlanetForUnit(UnitSpecification unit)
     {
