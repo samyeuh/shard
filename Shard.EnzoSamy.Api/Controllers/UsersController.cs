@@ -1,27 +1,30 @@
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic.CompilerServices;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
 
-namespace Shard.EnzoSamy.Api.Controllers;
-
-
 [Route("[controller]")]
 [ApiController]
-
-public class UsersController(List<UserSpecification> users, UserService userService) : ControllerBase
+public class UsersController : ControllerBase
 {
+    private readonly List<UserSpecification> _users;
+    private readonly UserService _userService;
+
+    public UsersController(List<UserSpecification> users, UserService userService)
+    {
+        _users = users;
+        _userService = userService;
+    }
+
     [HttpPut]
     [Route("/users/{userId}")]
-    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification updatedUser)
+    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification newUser)
     {
-        if (userId != updatedUser.Id)
+        if (userId != newUser.Id)
         {
             return BadRequest("The userId in the URL does not match the Id in the body.");
         }
-        
+
         if (!ValidationUtils.IsValidUserId(userId))
         {
             return BadRequest("The body does not contain a valid identifier.");
@@ -29,18 +32,9 @@ public class UsersController(List<UserSpecification> users, UserService userServ
 
         try
         {
-            var index = userService.FindUserIndex(userId);
+            var user = _userService.CreateUser(newUser);
 
-            if (index == -1)
-            {
-                users.Add(updatedUser);
-            }
-            else
-            {
-                users[index] = updatedUser;
-            }
-
-            return updatedUser; 
+            return user;
         }
         catch (Exception)
         {
@@ -48,29 +42,25 @@ public class UsersController(List<UserSpecification> users, UserService userServ
         }
     }
 
-    
     [HttpGet]
     [Route("/users/{userId}")]
     public ActionResult<UserSpecification> GetOnePlayer(string userId)
     {
         try
         {
-            var index = userService.FindUserIndex(userId);
-            
+            var index = _userService.FindUserIndex(userId);
+
             if (index != -1)
             {
-                return  users[index]; 
+                return _users[index];
             }
 
-            return NotFound($"User with ID {userId} not found. Actual users : {users}");
+            return NotFound($"User with ID {userId} not found. Actual users: {_users}");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return StatusCode(500, "An error occurred while getting the user."); 
+            return StatusCode(500, "An error occurred while getting the user.");
         }
     }
-   
-
-    
 }

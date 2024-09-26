@@ -39,13 +39,15 @@ public class UnitsController(
     [Route("/users/{userId}/units/{unitId}")]
     public async Task<ActionResult<UnitSpecification>> GetOneUnit(string userId, string unitId)
     {
-        var userWithUnits = userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
-        if (userWithUnits == null)
+        var user = userService.FindUser(unitId);
+        if (user == null)
         {
             return NotFound($"User with ID {userId} not found.");
         }
-
-        var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
+        var userUnits = userService.GetUnitsForUser(unitId);
+        if(userUnits == null) return NotFound($"User with ID {userId} dont have any units.");
+        
+        var unit = userUnits.FirstOrDefault(u => u.Id == unitId);
         if (unit == null) return NotFound($"Unit with ID {unitId} not found.");
         try
         {
@@ -69,14 +71,13 @@ public class UnitsController(
         {
             return BadRequest("The unitId in the URL does not match the Id in the body.");
         }
-
-        var userWithUnits = userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
-        if (userWithUnits == null)
+        var user = userService.FindUser(userId);
+        if (user == null)
         {
             return NotFound($"User with ID {userId} not found.");
         }
 
-        var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
+        var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
         if (unit == null)
         {
             return NotFound($"Unit with ID {unitId} not found.");
@@ -95,7 +96,7 @@ public class UnitsController(
     [Route("/users/{userId}/units/{unitId}/location")]
     public ActionResult<UnitLocation> GetUnitLocation(string userId, string unitId)
     {
-        var unit = unitService.GetUnitForUser(userId, unitId);
+        var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
         if (unit == null)
         {
             return NotFound($"User or Unit not found: User ID {userId}, Unit ID {unitId}");

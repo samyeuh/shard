@@ -18,9 +18,9 @@ public class UnitSpecification
 
     public UnitSpecification() { }
 
-    public UnitSpecification(Random random, SystemSpecification system, string type)
+    public UnitSpecification(SystemSpecification system, string type)
     {
-        Id = random.Next(1000).ToString();
+        Id = Guid.NewGuid().ToString();
         Type = type;
         SystemSpecification systemSpecification = system;
         System = systemSpecification.Name;
