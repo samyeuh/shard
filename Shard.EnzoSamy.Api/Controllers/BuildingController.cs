@@ -3,19 +3,19 @@ using Shard.EnzoSamy.Api.Enumerations;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class BuildingController(UserService userService) : ControllerBase
+public class BuildingController(UserService userService, IClock clock) : ControllerBase
 {
     
-    public record BuildingWithoutBuilderId(string Planet, string System, string Type, string resourceCategory);
     
     [HttpPost]
     [Route("/users/{userId}/buildings")]
-    public ActionResult<BuildingWithoutBuilderId> BuildMineOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
+    public ActionResult<BuildingSpecification> BuildMineOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
@@ -42,9 +42,9 @@ public class BuildingController(UserService userService) : ControllerBase
         
         var building = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory);
         user.Buildings.Add(building);
-        building.StartBuild();
+        building.StartBuild(clock);
         
-        return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type, buildingSpecification.ResourceCategory);
+        return building;
     }
     
     [HttpGet]
@@ -59,11 +59,11 @@ public class BuildingController(UserService userService) : ControllerBase
         var userUnit = userService.GetUnitsForUser(userId);
         if (userUnit == null || userUnit.Count == 0) return NotFound("User dont have any units.");
 
-        var buildings = user.Buildings.FirstOrDefault(building => building.Id == buildingId);
-        if(buildings is null) return BadRequest("Building dont have any buildings.");
+        var building = user.Buildings.FirstOrDefault(building => building.Id == buildingId);
+        if(building is null) return BadRequest("User dont have any buildings.");
 
-        await buildings.WaitIfBuild();
-        return buildings;
+        await building.WaitIfBuild();
+        return building;
     }
 
 }
