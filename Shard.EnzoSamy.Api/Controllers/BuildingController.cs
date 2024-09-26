@@ -8,7 +8,7 @@ namespace Shard.EnzoSamy.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class BuildingController(UserService userService, List<BuildingSpecification> listBuildingSpecification) : ControllerBase
+public class BuildingController(UserService userService) : ControllerBase
 {
     
     public record BuildingWithoutBuilderId(string Planet, string System, string Type, string resourceCategory);
@@ -40,8 +40,30 @@ public class BuildingController(UserService userService, List<BuildingSpecificat
         
         if (!Enum.GetNames(typeof(ResourceCategory)).Contains(buildingSpecification.ResourceCategory)) return BadRequest("Invalid resource category.");
         
-        listBuildingSpecification.Add(new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory));
+        var building = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory);
+        user.Buildings.Add(building);
+        building.StartBuild();
+        
         return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type, buildingSpecification.ResourceCategory);
+    }
+    
+    [HttpGet]
+    [Route("/users/{userId}/buildings/{buildingId}")]
+    public async Task<ActionResult<BuildingSpecification>> BuildMineOnPlanet(string userId, string buildingId)
+    {
+        if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
+
+        var user = userService.FindUser(userId);
+        if (user is null) return NotFound($"User with ID {userId} not found.");
+
+        var userUnit = userService.GetUnitsForUser(userId);
+        if (userUnit == null || userUnit.Count == 0) return NotFound("User dont have any units.");
+
+        var buildings = user.Buildings.FirstOrDefault(building => building.Id == buildingId);
+        if(buildings is null) return BadRequest("Building dont have any buildings.");
+
+        await buildings.WaitIfBuild();
+        return buildings;
     }
 
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
@@ -8,9 +9,6 @@ using Shard.EnzoSamy.Api.Utilities;
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
-
-    public record UserRequest(string Id, string Pseudo);
-
 
     public UsersController(UserService userService)
     {

@@ -1,4 +1,5 @@
-﻿using Shard.EnzoSamy.Api.Specifications;
+﻿using Shard.EnzoSamy.Api.Contracts;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
@@ -14,7 +15,7 @@ public class UserService
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UsersController.UserRequest newUser)
+    public UserSpecification CreateUser(UserRequest newUser)
     {
         var generatedUnits = _generateUnits();
         var user = new UserSpecification(newUser.Id, newUser.Pseudo, generatedUnits);
