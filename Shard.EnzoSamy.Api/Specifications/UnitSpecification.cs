@@ -22,8 +22,7 @@ public class UnitSpecification
     {
         Id = Guid.NewGuid().ToString();
         Type = type;
-        SystemSpecification systemSpecification = system;
-        System = systemSpecification.Name;
+        System = system.Name;
         Planet = null;
     }
 

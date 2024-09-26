@@ -7,18 +7,19 @@ using Shard.EnzoSamy.Api.Utilities;
 [ApiController]
 public class UsersController : ControllerBase
 {
-    private readonly List<UserSpecification> _users;
     private readonly UserService _userService;
 
-    public UsersController(List<UserSpecification> users, UserService userService)
+    public record UserRequest(string Id, string Pseudo);
+
+
+    public UsersController(UserService userService)
     {
-        _users = users;
         _userService = userService;
     }
 
     [HttpPut]
     [Route("/users/{userId}")]
-    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification newUser)
+    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserRequest newUser)
     {
         if (userId != newUser.Id)
         {
@@ -49,7 +50,7 @@ public class UsersController : ControllerBase
         {
             var user = _userService.FindUser(userId);
 
-            if (user == null) return NotFound($"User with ID {userId} not found. Actual users: {_users}");
+            if (user == null) return NotFound($"User with ID {userId} not found.");
 
             return user;
         }

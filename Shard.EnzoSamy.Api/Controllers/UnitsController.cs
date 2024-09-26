@@ -39,13 +39,13 @@ public class UnitsController(
     [Route("/users/{userId}/units/{unitId}")]
     public async Task<ActionResult<UnitSpecification>> GetOneUnit(string userId, string unitId)
     {
-        var user = userService.FindUser(unitId);
+        var user = userService.FindUser(userId);
         logger.LogInformation($"user {user} with ID {unitId} found.");
         if (user == null)
         {
             return NotFound($"User with ID {userId} not found.");
         }
-        var userUnits = userService.GetUnitsForUser(unitId);
+        var userUnits = userService.GetUnitsForUser(userId);
         if(userUnits == null) return NotFound($"User with ID {userId} dont have any units.");
         
         var unit = userUnits.FirstOrDefault(u => u.Id == unitId);

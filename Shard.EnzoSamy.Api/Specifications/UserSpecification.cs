@@ -6,8 +6,8 @@ namespace Shard.EnzoSamy.Api.Specifications;
 public class UserSpecification
 {
     public string Id { get; set; }
-    public string? Pseudo { get; set; }
-    public string DateOfCreation { get; set; }
+    public string Pseudo { get; set; }
+    public string? DateOfCreation { get; set; }
     public Dictionary<string, int?>? ResourcesQuantity { get; set; }
     public List<UnitSpecification> Units { get; set; }
     

@@ -7,13 +7,14 @@ public class UserService
 {
     private readonly List<UserSpecification> _users;
     private readonly SectorSpecification _sector;
+
     public UserService(List<UserSpecification> users, SectorSpecification sector)
     {
         _users = users;
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UserSpecification newUser)
+    public UserSpecification CreateUser(UsersController.UserRequest newUser)
     {
         var generatedUnits = _generateUnits();
         var user = new UserSpecification(newUser.Id, newUser.Pseudo, generatedUnits);
