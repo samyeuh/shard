@@ -2,7 +2,7 @@
 
 public enum ResourceCategory
 {
-    Solid,
-    Liquid,
-    Gaseous
+    solid,
+    liquid,
+    gaseous
 }
