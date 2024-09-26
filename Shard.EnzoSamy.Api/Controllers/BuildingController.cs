@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Shard.EnzoSamy.Api.Enumerations;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.EnzoSamy.Api.Utilities;
@@ -36,6 +37,8 @@ public class BuildingController(UserService userService, List<BuildingSpecificat
         if (userBuilderUnit.Planet is null) return BadRequest("An error occured.");
         
         if (buildingSpecification.Type != "mine") return BadRequest("Invalid type.");
+        
+        if (!Enum.GetNames(typeof(ResourceCategory)).Contains(buildingSpecification.ResourceCategory)) return BadRequest("Invalid resource category.");
         
         listBuildingSpecification.Add(new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory));
         return new BuildingWithoutBuilderId(userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.Type, buildingSpecification.ResourceCategory);
