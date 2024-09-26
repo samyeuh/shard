@@ -7,12 +7,10 @@ public class UserSpecification
 {
     public string Id { get; set; }
     public string? Pseudo { get; set; }
-    public string DateOfCreation { get; set; } // Convertir en set pour permettre la désérialisation
+    public string DateOfCreation { get; set; }
     public Dictionary<string, int?> ResourcesQuantity { get; set; }
     public List<UnitSpecification> Units { get; set; }
-    
-    private readonly string[] _typeList = new[] { "scout", "builder" };
-    
+
     public UserSpecification()
     {
         Id = Guid.NewGuid().ToString();
@@ -29,22 +27,13 @@ public class UserSpecification
 
         foreach (ResourceKind resourceKind in Enum.GetValues(typeof(ResourceKind)))
         {
-            switch (resourceKind)
+            resourceQuantities[resourceKind.ToString().ToLower()] = resourceKind switch
             {
-                case ResourceKind.Carbon:
-                    resourceQuantities[resourceKind.ToString().ToLower()] = 20;
-                    break;
-                case ResourceKind.Iron:
-                    resourceQuantities[resourceKind.ToString().ToLower()] = 10;
-                    break;
-                case ResourceKind.Oxygen:
-                case ResourceKind.Water:
-                    resourceQuantities[resourceKind.ToString().ToLower()] = 50;
-                    break;
-                default:
-                    resourceQuantities[resourceKind.ToString().ToLower()] = 0;
-                    break;
-            }
+                ResourceKind.Carbon => 20,
+                ResourceKind.Iron => 10,
+                ResourceKind.Oxygen or ResourceKind.Water => 50,
+                _ => 0
+            };
         }
 
         return resourceQuantities;

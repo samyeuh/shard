@@ -40,6 +40,7 @@ public class UnitsController(
     public async Task<ActionResult<UnitSpecification>> GetOneUnit(string userId, string unitId)
     {
         var user = userService.FindUser(unitId);
+        logger.LogInformation($"user {user} with ID {unitId} found.");
         if (user == null)
         {
             return NotFound($"User with ID {userId} not found.");
@@ -49,14 +50,7 @@ public class UnitsController(
         
         var unit = userUnits.FirstOrDefault(u => u.Id == unitId);
         if (unit == null) return NotFound($"Unit with ID {unitId} not found.");
-        try
-        {
-            await unit.WaitIfArrived();
-        }
-        catch (OperationCanceledException)
-        {
-            return StatusCode(499, "Request canceled");
-        }
+        
         await unit.WaitIfArrived();
         return unit;
 

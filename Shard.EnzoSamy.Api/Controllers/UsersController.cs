@@ -33,7 +33,6 @@ public class UsersController : ControllerBase
         try
         {
             var user = _userService.CreateUser(newUser);
-
             return user;
         }
         catch (Exception)
@@ -48,14 +47,11 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var index = _userService.FindUserIndex(userId);
+            var user = _userService.FindUser(userId);
 
-            if (index != -1)
-            {
-                return _users[index];
-            }
+            if (user == null) return NotFound($"User with ID {userId} not found. Actual users: {_users}");
 
-            return NotFound($"User with ID {userId} not found. Actual users: {_users}");
+            return user;
         }
         catch (Exception e)
         {

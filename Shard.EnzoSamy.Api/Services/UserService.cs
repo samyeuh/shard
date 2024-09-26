@@ -17,10 +17,12 @@ public class UserService
 
     public UserSpecification CreateUser(UserSpecification newUser)
     {
-        var user = new UserSpecification();
-        user.Id = newUser.Id;
-        user.Pseudo = newUser.Pseudo;
-        user.Units = _generateUnits();
+        var user = new UserSpecification
+        {
+            Id = newUser.Id,
+            Pseudo = newUser.Pseudo,
+            Units = _generateUnits()
+        };
         _users.Add(user);
         return user;
     }
