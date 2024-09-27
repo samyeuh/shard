@@ -41,11 +41,26 @@ public class BuildingSpecification(string type, string planet, string system, st
             _startBuildTask = Task.CompletedTask;
         }
     }
-
-    private void ExtractContinuously()
+    
+    private void ExtractContinuously(IClock clock)
     {
-        
-        
+        _clock = clock;
+        _startExtract1Minutes = _clock.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => FinishExtractContinuously(clock));
+    }
+
+    private async Task WaitIfExtract1Minutes()
+    {
+        if (_startExtract1Minutes is { IsCompleted: false }) return;
+        if (_startExtract1Minutes != null) await _startExtract1Minutes;
+    }
+
+    private void FinishExtractContinuously(IClock clock)
+    {
+        if (_startExtract1Minutes is { IsCompleted: false })
+        {
+            _startExtract1Minutes = Task.CompletedTask;
+        }
+        ExtractContinuously(clock);
     }
     
 
