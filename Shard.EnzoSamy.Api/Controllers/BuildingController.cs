@@ -9,7 +9,7 @@ namespace Shard.EnzoSamy.Api.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class BuildingController(UserService userService, IClock clock) : ControllerBase
+public class BuildingController(UserService userService, SectorService sectorService, IClock clock) : ControllerBase
 {
     
     
@@ -42,7 +42,7 @@ public class BuildingController(UserService userService, IClock clock) : Control
         
         var building = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory);
         user.Buildings.Add(building);
-        building.StartBuild(clock);
+        building.StartBuild(clock, sectorService, userService, userId);
         
         return building;
     }

@@ -1,4 +1,6 @@
-﻿using Shard.Shared.Core;
+﻿using Shard.EnzoSamy.Api.Enumerations;
+using Shard.EnzoSamy.Api.Services;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api;
 
@@ -6,7 +8,6 @@ public class PlanetSpecification
 {
     public string Name { get; }
     public int Size { get; }
-    
     public Dictionary<ResourceKind, int> ResourceQuantity { get; }
 
     internal PlanetSpecification(Random random)

@@ -1,3 +1,4 @@
+using Shard.EnzoSamy.Api.Services;
 using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Specifications;
@@ -17,12 +18,20 @@ public class BuildingSpecification(string type, string planet, string system, st
     private Task? _startBuildTaskMinus2Seconds;
     private Task? _startExtract1Minutes;
     private IClock _clock;
+    private SectorService _sectorService;
+    private UserService _userService;
+    private string _userId;
     
-    public void StartBuild(IClock clock)
+    public async void StartBuild(IClock clock, SectorService sectorService, UserService userService, string userId)
     {
         _clock = clock;
+        _sectorService = sectorService;
+        _userService = userService;
+        _userId = userId;
         EstimatedBuildTime = _clock.Now + TimeSpan.FromMinutes(5);
-        _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5)).ContinueWith(_ => FinishBuild());
+        _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5));
+        FinishBuild();
+        await ExtractContinuously();
         _startBuildTaskMinus2Seconds = _clock.Delay(TimeSpan.FromMinutes(5) - TimeSpan.FromSeconds(2));
     }
 
@@ -42,11 +51,20 @@ public class BuildingSpecification(string type, string planet, string system, st
         }
     }
     
-    private void ExtractContinuously(IClock clock)
+    private async Task ExtractContinuously()
     {
-        _clock = clock;
-        _startExtract1Minutes = _clock.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => FinishExtractContinuously(clock));
+            try
+            {
+                await _clock.Delay(TimeSpan.FromMinutes(1));
+                FinishExtractContinuously();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during extraction: {ex.Message}");
+            }
     }
+
+
 
     private async Task WaitIfExtract1Minutes()
     {
@@ -54,13 +72,31 @@ public class BuildingSpecification(string type, string planet, string system, st
         if (_startExtract1Minutes != null) await _startExtract1Minutes;
     }
 
-    private void FinishExtractContinuously(IClock clock)
+    private void FinishExtractContinuously()
     {
-        if (_startExtract1Minutes is { IsCompleted: false })
+        var resourceKind = ExtractResourceFromPlanet();
+        if (resourceKind != null)
+        {
+            AddResourceToUser(resourceKind);
+            ExtractContinuously();
+        }
+        else
         {
             _startExtract1Minutes = Task.CompletedTask;
         }
-        ExtractContinuously(clock);
+    }
+
+    private ResourceKind? ExtractResourceFromPlanet()
+    {
+          ResourceKind? resourceKind = _sectorService.ExtractResource(ResourceCategory, Planet, System);
+          if (resourceKind is null) return null;
+          return resourceKind;
+    }
+
+    private void AddResourceToUser(ResourceKind? resourceKind)
+    {
+        var user = _userService.FindUser(_userId);
+        _userService.AddResourceToUser(user.Id, resourceKind.ToString());
     }
     
 

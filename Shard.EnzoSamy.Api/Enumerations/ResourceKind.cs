@@ -3,11 +3,11 @@
 [Flags]
 public enum ResourceKind
 {
-    Carbon,
-    Iron,
-    Gold,
-    Aluminium,
-    Titanium,
-    Water,
-    Oxygen,
+    Carbon = 1,
+    Iron = 2,
+    Gold = 4,
+    Aluminium = 3,
+    Titanium = 5,
+    Water = 0,
+    Oxygen = -1,
 }

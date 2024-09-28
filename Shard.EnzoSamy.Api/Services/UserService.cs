@@ -41,4 +41,21 @@ public class UserService
         var user = FindUser(userId);
         return user?.Units;
     }
+
+    public void AddResourceToUser(string userId, string resourceKind)
+    {
+        var user = FindUser(userId);
+        user.ResourcesQuantity[resourceKind] += 1;
+    }
+
+    public UserSpecification? getUserWithUnit(string unitId)
+    {
+        foreach (UserSpecification user in _users)
+        {
+            var goodUser = user.Units.FirstOrDefault(u => u.Id == unitId);
+            if (goodUser != null) return user;
+        }
+
+        return null;
+    }
 }

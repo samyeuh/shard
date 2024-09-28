@@ -29,6 +29,7 @@ builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SectorService>();
 builder.Services.AddScoped<UnitService>();
+builder.Services.AddScoped<ResourceService>();
 
 var app = builder.Build();
 
