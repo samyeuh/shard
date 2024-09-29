@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
-using Shard.EnzoSamy.Api.Utilities;
+﻿using Microsoft.AspNetCore.Mvc;
+using Shard.EnzoSamy.Api.Services;
+using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
 
@@ -9,25 +9,21 @@ namespace Shard.EnzoSamy.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 
-public class UnitsController : ControllerBase
+public class UnitsController(
+    UserService userService,
+    UnitService unitService,
+    IClock? clock,
+    ILogger<UnitsController> logger)
+    : ControllerBase
 {
-    private readonly UserService _userService;
-    private readonly UnitService _unitService;
+    public record UnitLocation(string System, string? Planet, IReadOnlyDictionary<string, int>? ResourcesQuantity);
 
-    public record UnitLocation(string system, string? planet, IReadOnlyDictionary<string, int>? resourcesQuantity);
 
-    public UnitsController(UserService userService, UnitService unitService)
-    {
-        _userService = userService;
-        _unitService = unitService;
-    }
-    
-    
     [HttpGet]
     [Route("/users/{userId}/units")]
     public ActionResult<IReadOnlyList<UnitSpecification>> GetUnits(string userId)
     {
-        var units = _userService.GetUnitsForUser(userId);
+        var units = userService.GetUnitsForUser(userId);
 
         if (units != null)
         {
@@ -41,35 +37,40 @@ public class UnitsController : ControllerBase
 
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> GetOneUnit(string userId, string unitId)
+    public async Task<ActionResult<UnitSpecification>> GetOneUnit(string userId, string unitId)
     {
-        var userWithUnits = _userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
+        var userWithUnits = userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
         if (userWithUnits == null)
         {
             return NotFound($"User with ID {userId} not found.");
         }
 
         var unit = userWithUnits.Units.FirstOrDefault(u => u.Id == unitId);
-        if (unit != null)
+        if (unit == null) return NotFound($"Unit with ID {unitId} not found.");
+        try
         {
-            return unit;
+            await unit.WaitIfArrived();
         }
-        else
+        catch (OperationCanceledException)
         {
-            return NotFound($"Unit with ID {unitId} not found.");
+            return StatusCode(499, "Request canceled");
         }
+        await unit.WaitIfArrived();
+        return unit;
+
     }
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
     public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
+        logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
             return BadRequest("The unitId in the URL does not match the Id in the body.");
         }
 
-        var userWithUnits = _userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
+        var userWithUnits = userService.GetUsersWithUnit().FirstOrDefault(u => u.Id == userId);
         if (userWithUnits == null)
         {
             return NotFound($"User with ID {userId} not found.");
@@ -80,31 +81,39 @@ public class UnitsController : ControllerBase
         {
             return NotFound($"Unit with ID {unitId} not found.");
         }
+        
+        unit.DestinationSystem = updatedUnit.DestinationSystem;
+        unit.DestinationPlanet = updatedUnit.DestinationPlanet;
+        unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);
 
-        unit.System = updatedUnit.System;
-        unit.Planet = updatedUnit.Planet;
-
+        unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+    
         return unit;
     }
-    
+
     [HttpGet]
     [Route("/users/{userId}/units/{unitId}/location")]
     public ActionResult<UnitLocation> GetUnitLocation(string userId, string unitId)
     {
-        var unit = _unitService.GetUnitForUser(userId, unitId);
+        var unit = unitService.GetUnitForUser(userId, unitId);
         if (unit == null)
         {
             return NotFound($"User or Unit not found: User ID {userId}, Unit ID {unitId}");
         }
         
-        var planet = _unitService.GetPlanetForUnit(unit);
-        if (planet == null)
+        var planet = unitService.GetPlanetForUnit(unit);
+        if (unit.EstimatedTimeOfArrival != null)
         {
-            return new UnitLocation(unit.System, null, null);
+            logger.LogInformation($"Unit System : {unit.System}, Planet : {planet?.Name}, Estimated Time : {unit.EstimatedTimeOfArrival}");
+            return new UnitLocation(unit.System, planet?.Name, null);
         }
-        
-        var resources = _unitService.MapPlanetResources(planet);
 
-        return new UnitLocation(unit.System, planet.Name, resources);
+        if (planet == null) return new UnitLocation(unit.System, null, null);
+        
+        var resources = unitService.MapPlanetResources(planet);
+
+        logger.LogInformation($"Unit System : {unit.System}, Planet : {planet.Name}, Resources : {resources}");
+        
+        return unit.Type == "scout" ? new UnitLocation(unit.System, planet.Name, resources) : new UnitLocation(unit.System, planet.Name, null);
     }
 }

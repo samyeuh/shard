@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shard.EnzoSamy.Api.Services;
 using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Controllers;
@@ -6,22 +7,15 @@ namespace Shard.EnzoSamy.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 
-public class PlanetsController : ControllerBase
+public class PlanetsController(SectorService sectorService) : ControllerBase
 {
-    
-    private readonly SectorService _sectorService;
-
     public record PlanetWithoutResource(string Name, int Size);
 
-    public PlanetsController(SectorService sectorService)
-    {
-        _sectorService = sectorService;
-    }
     [HttpGet]
     [Route("/systems/{systemId}/planets/{planetId}")]
     public ActionResult<PlanetWithoutResource> GetOnePlanet(string systemId, string planetId)
     {
-        var system = _sectorService.GetOneSystem(systemId);
+        var system = sectorService.GetOneSystem(systemId);
         var planets = system.Planets.Select((planet) => new PlanetWithoutResource(Name: planet.Name, Size: planet.Size)).ToList();
         var planet = planets.First(planet => planet.Name == planetId);
         return planet;
@@ -31,7 +25,7 @@ public class PlanetsController : ControllerBase
     [Route("/systems/{systemId}/planets")]
     public ActionResult<IReadOnlyList<PlanetWithoutResource>> GetPlanets(string systemId)
     {
-        var system = _sectorService.GetOneSystem(systemId);
+        var system = sectorService.GetOneSystem(systemId);
         var planets = system.Planets.Select((planet) => new PlanetWithoutResource(Name: planet.Name, Size: planet.Size)).ToList();
         return new (planets);
     }

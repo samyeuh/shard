@@ -1,10 +1,10 @@
 # Qualité
 
-* Nommage variables: 0.9
-* Usage adéquat des fonctionnalités du langage: 0.7
+* Nommage variables: 1.0
+* Usage adéquat des fonctionnalités du langage: 0.8
 * Simplicité des fonctions: 1.0
 * Simplicité des classes: 1.0
-* Pas de dupplication de code: 0.5
+* Pas de dupplication de code: 0.7
 * Séparation de responsabilités: 1.0
-* Encapsulation: 0.8
+* Encapsulation: 0.7
 

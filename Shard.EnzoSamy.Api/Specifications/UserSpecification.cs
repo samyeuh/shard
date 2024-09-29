@@ -1,8 +1,4 @@
-using System.CodeDom.Compiler;
-using System.Text.Json.Serialization;
-using Shard.Shared.Core;
-
-namespace Shard.EnzoSamy.Api;
+namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UserSpecification
 {
@@ -12,10 +8,6 @@ public class UserSpecification
     public UserSpecification()
     {
         Id = Guid.NewGuid().ToString();
-    }
-
-    public UserSpecification(Random random) : this()
-    {
-        Pseudo = random.NextGuid().ToString();
+        Pseudo = Guid.NewGuid().ToString();
     }
 }
