@@ -29,9 +29,9 @@ public class BuildingSpecification(string type, string planet, string system, st
         _userService = userService;
         _userId = userId;
         EstimatedBuildTime = _clock.Now + TimeSpan.FromMinutes(5);
-        _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5));
-        FinishBuild();
-        await ExtractContinuously();
+        _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5))
+            .ContinueWith(_ => FinishBuild())
+            .ContinueWith(_ => ExtractContinuously());
         _startBuildTaskMinus2Seconds = _clock.Delay(TimeSpan.FromMinutes(5) - TimeSpan.FromSeconds(2));
     }
 
@@ -68,17 +68,17 @@ public class BuildingSpecification(string type, string planet, string system, st
 
     private async Task WaitIfExtract1Minutes()
     {
-        if (_startExtract1Minutes is { IsCompleted: false }) return;
+        if (_startBuildTaskMinus2Seconds is { IsCompleted: false }) return;
         if (_startExtract1Minutes != null) await _startExtract1Minutes;
     }
 
-    private void FinishExtractContinuously()
+    private async void FinishExtractContinuously()
     {
         var resourceKind = ExtractResourceFromPlanet();
         if (resourceKind != null)
         {
             AddResourceToUser(resourceKind);
-            ExtractContinuously();
+            await ExtractContinuously();
         }
         else
         {
