@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Shard.EnzoSamy.Api.Services;
 using Shard.Shared.Core;
 
@@ -10,9 +11,12 @@ public class BuildingSpecification(string type, string planet, string system, st
     public string Type { get; set; } = type;
     public string BuilderId { get; set; } = builderId;
     public string? Planet { get; set; } = planet;
+    private string? _originalPlanet = planet;
     public string? System { get; set; } = system;
+    private string? _originalSystem = system;
     public DateTime? EstimatedBuildTime { get; set; }
     public bool IsBuilt { get; set; }
+    public bool IsCanceled { get; set; } = false;
     public string? ResourceCategory { get; set; } = resourceCategory;
     private Task? _startBuildTask;
     private Task? _startBuildTaskMinus2Seconds;
@@ -22,6 +26,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     private UserService _userService;
     private string _userId;
     private bool _isActive = true;
+    private bool _inLastTwoSeconds = false;
     
     public async void StartBuild(IClock clock, SectorService sectorService, UserService userService, string userId)
     {
@@ -30,20 +35,25 @@ public class BuildingSpecification(string type, string planet, string system, st
         _userService = userService;
         _userId = userId;
         EstimatedBuildTime = _clock.Now + TimeSpan.FromMinutes(5);
-        _startBuildTask = _clock.Delay(TimeSpan.FromMinutes(5))
-            .ContinueWith(_ => FinishBuild())
-            .ContinueWith(_ => ExtractContinuously());
-        _startBuildTaskMinus2Seconds = _clock.Delay(TimeSpan.FromMinutes(5) - TimeSpan.FromSeconds(2));
+        _startBuildTask = Task.Run(async () =>
+        {
+            _startBuildTaskMinus2Seconds = _clock.Delay(TimeSpan.FromMinutes(5) - TimeSpan.FromSeconds(2));
+            await _clock.Delay(TimeSpan.FromMinutes(5));
+            FinishBuild();
+            await ExtractContinuously();
+        });
+
     }
 
     public async Task WaitIfBuild()
     {
         if(_startBuildTaskMinus2Seconds is { IsCompleted: false }) return;
-        if (_startBuildTask != null) await _startBuildTask;
+        if (_startBuildTask is { IsCompleted: false }) await _startBuildTask;
     }
 
     private void FinishBuild()
     {
+        if (IsCanceled) return;
         IsBuilt = true;
         EstimatedBuildTime = null;
         if (_startBuildTask is { IsCompleted: false })
