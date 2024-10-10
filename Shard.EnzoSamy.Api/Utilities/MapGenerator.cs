@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
+using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api;
 

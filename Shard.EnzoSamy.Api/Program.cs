@@ -4,7 +4,6 @@ using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 using MapGenerator = Shard.EnzoSamy.Api.MapGenerator;
-using MapGeneratorOptions = Shard.EnzoSamy.Api.MapGeneratorOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -21,6 +21,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     private SectorService _sectorService;
     private UserService _userService;
     private string _userId;
+    private bool _isActive = true;
     
     public async void StartBuild(IClock clock, SectorService sectorService, UserService userService, string userId)
     {
@@ -50,39 +51,34 @@ public class BuildingSpecification(string type, string planet, string system, st
             _startBuildTask = Task.CompletedTask;
         }
     }
+
+    private void StopExtract()
+    {
+        _isActive = false;
+    }
     
     private async Task ExtractContinuously()
     {
+        while (_isActive)
+        {
             try
             {
                 await _clock.Delay(TimeSpan.FromMinutes(1));
-                FinishExtractContinuously();
+                
+                var resourceKind = ExtractResourceFromPlanet();
+                if (resourceKind != null)
+                {
+                    AddResourceToUser(resourceKind);
+                }
+                else
+                {
+                    StopExtract();
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during extraction: {ex.Message}");
             }
-    }
-
-
-
-    private async Task WaitIfExtract1Minutes()
-    {
-        if (_startBuildTaskMinus2Seconds is { IsCompleted: false }) return;
-        if (_startExtract1Minutes != null) await _startExtract1Minutes;
-    }
-
-    private async void FinishExtractContinuously()
-    {
-        var resourceKind = ExtractResourceFromPlanet();
-        if (resourceKind != null)
-        {
-            AddResourceToUser(resourceKind);
-            await ExtractContinuously();
-        }
-        else
-        {
-            _startExtract1Minutes = Task.CompletedTask;
         }
     }
 
@@ -96,7 +92,7 @@ public class BuildingSpecification(string type, string planet, string system, st
     private void AddResourceToUser(ResourceKind? resourceKind)
     {
         var user = _userService.FindUser(_userId);
-        _userService.AddResourceToUser(user.Id, resourceKind.ToString());
+        _userService.AddResourceToUser(user.Id, resourceKind.ToString().ToLower());
     }
     
 
