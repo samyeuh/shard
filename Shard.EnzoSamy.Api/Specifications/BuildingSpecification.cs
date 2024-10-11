@@ -47,13 +47,25 @@ public class BuildingSpecification(string type, string planet, string system, st
 
     public async Task WaitIfBuild()
     {
-        if(_startBuildTaskMinus2Seconds is { IsCompleted: false }) return;
-        if (_startBuildTask is { IsCompleted: false }) await _startBuildTask;
+        if (_startBuildTaskMinus2Seconds != null)
+        {
+            if (!_startBuildTaskMinus2Seconds.IsCompleted)
+            {
+                _startBuildTaskMinus2Seconds = null;
+            }
+            else
+            {
+                IsBuilt = true;
+            }
+
+            return;
+
+        }
+        if (_startBuildTask != null) await _startBuildTask;
     }
 
     private void FinishBuild()
     {
-        if (IsCanceled) return;
         IsBuilt = true;
         EstimatedBuildTime = null;
         if (_startBuildTask is { IsCompleted: false })
