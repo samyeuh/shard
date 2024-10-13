@@ -12,12 +12,12 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class UnitsController(
     UserService userService,
     UnitService unitService,
+    FightService fightService,
     IClock? clock,
     ILogger<UnitsController> logger)
     : ControllerBase
 {
     public record UnitLocation(string System, string? Planet, IReadOnlyDictionary<string, int>? ResourcesQuantity);
-
 
     [HttpGet]
     [Route("/users/{userId}/units")]
@@ -58,7 +58,7 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public async Task<ActionResult<UnitSpecification>> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
@@ -74,8 +74,10 @@ public class UnitsController(
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
         if (unit == null)
         {
-            return NotFound($"Unit with ID {unitId} not found.");
+            unit = unitService.CreateUnit(updatedUnit, userId);
+            if (unit is null) return BadRequest("Error");
         }
+            
         
         var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
         if (buildingNotConstruct != null)
@@ -87,11 +89,11 @@ public class UnitsController(
             }
         }
         
-        unit.DestinationSystem = updatedUnit.DestinationSystem;
+        unit.DestinationSystem = updatedUnit.System;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
         unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);
-
-        unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+        unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);  
+        unitService.FightUnits(userId, unitId);
     
         return unit;
     }

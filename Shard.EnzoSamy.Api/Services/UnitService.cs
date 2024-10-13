@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
 
-public class UnitService(UserService userService, SectorService sectorService)
+public class UnitService(UserService userService, SectorService sectorService, FightService fightService, List<UserSpecification> userSpecifications)
 {
     /*public UnitSpecification? GetUnitForUser(string userId, string unitId)
     {
@@ -36,6 +37,50 @@ public class UnitService(UserService userService, SectorService sectorService)
         travelTime += TimeSpan.FromSeconds(15);
         unit.Planet = null;
         return currentTime + travelTime;
+    }
+
+    public async void FightUnits(string userId, string unitId)
+    {
+        var user = userService.FindUser(userId);
+        if (user is null) return;
+        var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
+        if (unit is null) return;
+        var enemyUnits = GetUnitInSystem(unit.System).Where(u => u.Id != unitId);
+
+        if (enemyUnits.Any())
+        {
+            var enemyPriority = enemyUnits.Where(e => unit.TypePriority.Contains(e.Type)).OrderBy(e => unit.TypePriority.IndexOf(e.Type)).ToList();
+            foreach (var enemy in enemyPriority)
+            {
+                await fightService.Fight(unit, enemy);
+            }
+        }
+    }
+
+
+    public List<UnitSpecification> GetUnitInSystem(String system)
+    {
+        List<UnitSpecification> units = new List<UnitSpecification>();
+        foreach (var user in userSpecifications)
+        {
+            var unitsOfUser = userService.GetUnitsForUser(user.Id);
+            if (unitsOfUser.Count == 0 || unitsOfUser is null) continue;
+            
+            foreach (var unit in unitsOfUser)
+            {
+                if (unit.System == system) units.Add(unit);
+            }
+        }
+        return units;
+    }
+
+    public UnitSpecification? CreateUnit(UnitSpecification unit, string userId)
+    {
+        var user = userService.FindUser(userId);
+        if (user is null) return null;
+        unit.SetCombatSpec();
+        user.Units.Add(unit);
+        return unit;
     }
     
 }

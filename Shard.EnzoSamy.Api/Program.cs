@@ -29,6 +29,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SectorService>();
 builder.Services.AddScoped<UnitService>();
 builder.Services.AddScoped<ResourceService>();
+builder.Services.AddScoped<FightService>();
 
 var app = builder.Build();
 
