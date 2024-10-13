@@ -15,7 +15,7 @@ public class BuildingController(UserService userService, SectorService sectorSer
     
     [HttpPost]
     [Route("/users/{userId}/buildings")]
-    public ActionResult<BuildingSpecification> BuildMineOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
+    public ActionResult<BuildingSpecification> BuildBuildingOnPlanet(string userId, [FromBody] BuildingSpecification buildingSpecification)
     {
         if (!ValidationUtils.IsValidUserId(userId)) return NotFound("Invalid user Id");
 
@@ -23,29 +23,48 @@ public class BuildingController(UserService userService, SectorService sectorSer
         if (user is null) return NotFound($"User with ID {userId} not found.");
 
         var userUnit = userService.GetUnitsForUser(userId);
-        if (userUnit == null || !userUnit.Any()) return NotFound("User dont have any units.");
-        
-        var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Type == "builder");
-        
-        
+        if (userUnit == null || !userUnit.Any()) return NotFound("User don't have any units.");
 
-        if (userBuilderUnit is null) return BadRequest("User dont have any builders.");
-        if (string.IsNullOrEmpty(userBuilderUnit.Planet)) return BadRequest("User dont have any planet.");
-        
+        var userBuilderUnit = userUnit.FirstOrDefault(unit => unit.Type == "builder");
+
+        if (userBuilderUnit is null) return BadRequest("User don't have any builders.");
+        if (string.IsNullOrEmpty(userBuilderUnit.Planet)) return BadRequest("User don't have any planet.");
+
         if (userBuilderUnit.Id != buildingSpecification.BuilderId) return BadRequest("Builder ID doesn't match unit id.");
 
-        if (userBuilderUnit.Planet is null) return BadRequest("An error occured.");
-        
-        if (buildingSpecification.Type != "mine") return BadRequest("Invalid type.");
-        
-        if (!Enum.GetNames(typeof(ResourceCategory)).Contains(buildingSpecification.ResourceCategory)) return BadRequest("Invalid resource category.");
-        
-        var building = new BuildingSpecification(buildingSpecification.Type, userBuilderUnit.Planet, userBuilderUnit.System, buildingSpecification.BuilderId, buildingSpecification.ResourceCategory);
+        // Vérification du type de bâtiment
+        if (buildingSpecification.Type == "mine")
+        {
+            // La catégorie de ressource est nécessaire pour une mine
+            if (string.IsNullOrEmpty(buildingSpecification.ResourceCategory))
+                return BadRequest("Resource category is required for a mine.");
+            if (!Enum.GetNames(typeof(ResourceCategory)).Contains(buildingSpecification.ResourceCategory))
+                return BadRequest("Invalid resource category.");
+        }
+        else if (buildingSpecification.Type == "starport")
+        {
+            // Le starport n'a pas besoin de catégorie de ressource
+            buildingSpecification.ResourceCategory = null;
+        }
+        else
+        {
+            return BadRequest("Invalid building type.");
+        }
+
+        var building = new BuildingSpecification(
+            buildingSpecification.Type,
+            userBuilderUnit.Planet,
+            userBuilderUnit.System,
+            buildingSpecification.BuilderId,
+            buildingSpecification.ResourceCategory
+        );
+
         user.Buildings.Add(building);
         building.StartBuild(clock, sectorService, userService, userId);
-        
+
         return building;
     }
+
     
     [HttpGet]
     [Route("/users/{userId}/buildings")]
