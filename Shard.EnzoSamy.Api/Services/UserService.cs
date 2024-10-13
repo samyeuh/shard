@@ -58,4 +58,21 @@ public class UserService
 
         return null;
     }
+    public void DeductResources(UserSpecification user, Dictionary<string, int> resources)
+    {
+        foreach (var resource in resources)
+        {
+            if (user.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                user.ResourcesQuantity[resource.Key] -= resource.Value;
+            }
+        }
+    }
+
+    public bool HasSufficientResources(UserSpecification user, Dictionary<string, int> requiredResources)
+    {
+        return requiredResources.All(resource =>
+            user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
+    }
+
 }

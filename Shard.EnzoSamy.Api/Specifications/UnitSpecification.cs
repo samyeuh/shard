@@ -15,15 +15,26 @@ public class UnitSpecification
     private Task? Arrive { get; set; }
     private Task? ArriveMinus2Sec { get; set; }
     private IClock? _clock;
+    public string UserId { get; set; }
 
     public UnitSpecification() { }
-
+    
     public UnitSpecification(SystemSpecification system, string type)
     {
         Id = Guid.NewGuid().ToString();
         Type = type;
         System = system.Name;
         Planet = null;
+        UserId = string.Empty; 
+    }
+
+    public UnitSpecification(SystemSpecification system, string type, string userId)
+    {
+        Id = Guid.NewGuid().ToString();
+        Type = type;
+        System = system.Name;
+        Planet = null;
+        UserId = userId;
     }
 
     public void StartTravel(string destinationSystem, string destinationPlanet, DateTime estimatedArrivalTime, IClock? clock)
@@ -66,4 +77,6 @@ public class UnitSpecification
         var timeUntilArrival = estimatedArrivalTime - now;
         return timeUntilArrival ?? TimeSpan.Zero;
     }
+    
+    public string Url => $"/users/{UserId}/units/{Id}";
 }
