@@ -69,6 +69,7 @@ namespace Shard.EnzoSamy.Api.Controllers
         [Route("/users/{userId}/buildings/{buildingId}/queue")]
         public ActionResult QueueUnit(string userId, string buildingId, [FromBody] UnitRequest unitRequest)
         {
+
             var user = userService.FindUser(userId);
             if (user == null) return NotFound("User not found.");
 

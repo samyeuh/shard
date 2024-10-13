@@ -60,6 +60,7 @@ public class UnitsController(
     [Route("/users/{userId}/units/{unitId}")]
     public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
+        var isAdmin = User.IsInRole("Admin");
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
@@ -74,6 +75,7 @@ public class UnitsController(
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
         if (unit == null)
         {
+            if (!isAdmin) return Unauthorized();
             return NotFound($"Unit with ID {unitId} not found.");
         }
         

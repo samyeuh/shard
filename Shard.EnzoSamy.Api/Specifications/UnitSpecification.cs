@@ -5,7 +5,7 @@ namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UnitSpecification
 {
-    public string Id { get; init; }
+    public string? Id { get; init; }
     public string Type { get; init; }
     public string System { get; set; }
     public string? Planet { get; set; }
@@ -15,7 +15,7 @@ public class UnitSpecification
     private Task? Arrive { get; set; }
     private Task? ArriveMinus2Sec { get; set; }
     private IClock? _clock;
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
     public UnitSpecification() { }
     
