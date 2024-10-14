@@ -58,24 +58,24 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public async Task<ActionResult<UnitSpecification>> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
-            return BadRequest("The unitId in the URL does not match the Id in the body.");
+            return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("The unitId in the URL does not match the Id in the body."));
         }
         var user = userService.FindUser(userId);
         if (user == null)
         {
-            return NotFound($"User with ID {userId} not found.");
+            return Task.FromResult<ActionResult<UnitSpecification>>(NotFound($"User with ID {userId} not found."));
         }
 
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
         if (unit == null)
         {
             unit = unitService.CreateUnit(updatedUnit, userId);
-            if (unit is null) return BadRequest("Error");
+            if (unit is null) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
         }
             
         
@@ -95,7 +95,7 @@ public class UnitsController(
         unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);  
         unitService.FightUnits(userId, unitId);
     
-        return unit;
+        return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
 
     [HttpGet]
