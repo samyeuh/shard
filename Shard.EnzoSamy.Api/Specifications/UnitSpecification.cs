@@ -14,11 +14,10 @@ public class UnitSpecification
     public DateTime? EstimatedTimeOfArrival { get; set; }
     public int? Health { get; set; }
 
-    public record Weapon(int minuteInterval, int damage);
+    public record Weapon(int secondInterval, int damage);
     
     public List<Weapon>? Weapons { get; set; }
     public List<String>? TypePriority { get; set; }
-    public Boolean? Deflector { get; set; }
     private Task? Arrive { get; set; }
     private Task? ArriveMinus2Sec { get; set; }
     private IClock? _clock;
@@ -54,15 +53,13 @@ public class UnitSpecification
         Weapons.Add(new Weapon(6, 10));
         Weapons.Add(new Weapon(6, 10));
         TypePriority = ["fighter", "cruiser", "bomber"];
-        Deflector = false;
     }
 
     private void SetBomberSpec()
     {
         Health = 50;
-        Weapons.Add(new Weapon(1, 400));
+        Weapons.Add(new Weapon(60, 400));
         TypePriority = ["cruiser", "bomber", "fighter"];
-        Deflector = true;
     }
 
     private void SetFighterSpec()
@@ -72,12 +69,12 @@ public class UnitSpecification
         TypePriority = ["bomber", "fighter", "cruiser"];
     }
     
-    public bool CanAttack(int currentMinute)
+    public bool CanAttack(int currentSecond)
     {
         foreach (var weapon in Weapons)
         {
-            int interval = weapon.minuteInterval;
-            if (currentMinute % interval == 0)
+            int interval = weapon.secondInterval;
+            if (currentSecond % interval == 0)
             {
                 return true; 
             }
@@ -85,16 +82,19 @@ public class UnitSpecification
         return false;
     }
 
-    public void Attack(UnitSpecification enemy, int currentMinute)
+    public void Attack(UnitSpecification enemy)
     {
-        if (CanAttack(currentMinute))
+        int currentSecond = _clock.Now.Second;
+        if (CanAttack(currentSecond))
         {
             foreach (var weapon in Weapons)
             {
-                int interval = weapon.minuteInterval;
-                if (currentMinute % interval == 0)
+                int interval = weapon.secondInterval;
+                if (currentSecond % interval == 0)
                 {
-                    enemy.Health -= weapon.damage;
+                    int damage = weapon.damage;
+                    if (Type == "cruiser" && enemy.Type == "bomber") damage /= 10;
+                    enemy.Health -= enemy.Health < damage ? enemy.Health : damage;
                 }
             }
         }

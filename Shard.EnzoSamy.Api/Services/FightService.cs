@@ -9,15 +9,13 @@ public class FightService(IClock clock)
 
     public async Task Fight(UnitSpecification unit1, UnitSpecification unit2)
     {
-        int currentMinute = 0;
 
         while (unit1.Health > 0 && unit2.Health > 0)
         {
-            currentMinute++;
-            await _clock.Delay(TimeSpan.FromMinutes(1));
+            await _clock.Delay(TimeSpan.FromSeconds(1));
             
-            unit1.Attack(unit2, currentMinute);
-            unit2.Attack(unit1, currentMinute);
+            unit1.Attack(unit2);
+            unit2.Attack(unit1);
             
             if (unit1.Health <= 0 || unit2.Health <= 0)
             {

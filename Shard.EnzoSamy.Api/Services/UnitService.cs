@@ -45,22 +45,22 @@ public class UnitService(UserService userService, SectorService sectorService, F
         if (user is null) return;
         var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit is null) return;
-        var enemyUnits = GetUnitInSystem(unit.System).Where(u => u.Id != unitId);
-
+        var enemyUnits = GetUnitInSystem(unit.System).Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type)).OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).ToList();;
         if (enemyUnits.Any())
         {
-            var enemyPriority = enemyUnits.Where(e => unit.TypePriority.Contains(e.Type)).OrderBy(e => unit.TypePriority.IndexOf(e.Type)).ToList();
-            foreach (var enemy in enemyPriority)
+            foreach (var enemy in enemyUnits)
             {
-                await fightService.Fight(unit, enemy);
+                await fightService.Fight(unit, enemy.Key);
+                if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
+                if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id); 
             }
         }
     }
 
 
-    public List<UnitSpecification> GetUnitInSystem(String system)
+    public Dictionary<UnitSpecification, string> GetUnitInSystem(String system)
     {
-        List<UnitSpecification> units = new List<UnitSpecification>();
+        Dictionary<UnitSpecification, string> units = new Dictionary<UnitSpecification, string>();
         foreach (var user in userSpecifications)
         {
             var unitsOfUser = userService.GetUnitsForUser(user.Id);
@@ -68,7 +68,7 @@ public class UnitService(UserService userService, SectorService sectorService, F
             
             foreach (var unit in unitsOfUser)
             {
-                if (unit.System == system) units.Add(unit);
+                if (unit.System == system) units.Add(unit, user.Id);
             }
         }
         return units;
@@ -81,6 +81,18 @@ public class UnitService(UserService userService, SectorService sectorService, F
         unit.SetCombatSpec();
         user.Units.Add(unit);
         return unit;
+    }
+
+    public bool DestroyUnit(string userId, string unitId)
+    {
+        var user = userService.FindUser(userId);
+        if (user == null) return false;
+        
+        var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
+        if (unit == null) return false;
+        
+        user.Units.Remove(unit);
+        return true;
     }
     
 }
