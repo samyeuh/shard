@@ -14,8 +14,10 @@ public class FightService(IClock clock)
         {
             await _clock.Delay(TimeSpan.FromSeconds(1));
             
-            unit1.Attack(unit2);
-            unit2.Attack(unit1);
+            int currentSecond = _clock.Now.Second;
+            
+            unit1.Attack(unit2, currentSecond);
+            unit2.Attack(unit1, currentSecond);
             
             if (unit1.Health <= 0 || unit2.Health <= 0)
             {

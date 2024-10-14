@@ -94,9 +94,8 @@ public class UnitSpecification
         return false;
     }
 
-    public void Attack(UnitSpecification enemy)
+    public void Attack(UnitSpecification enemy, int currentSecond)
     {
-        int currentSecond = _clock.Now.Second;
         if (CanAttack(currentSecond))
         {
             foreach (var weapon in Weapons)

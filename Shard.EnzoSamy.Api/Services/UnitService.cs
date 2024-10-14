@@ -43,18 +43,21 @@ public class UnitService(UserService userService, SectorService sectorService, F
     {
         var user = userService.FindUser(userId);
         if (user is null) return;
+        
         var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit is null) return;
-        var enemyUnits = GetUnitInSystem(unit.System).Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type)).OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).ToList();;
-        if (enemyUnits.Any())
-        {
-            foreach (var enemy in enemyUnits)
-            {
-                await fightService.Fight(unit, enemy.Key);
-                if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
-                if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id); 
-            }
-        }
+        
+        
+        
+        var enemy = GetUnitInSystem(unit.System)
+            .Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type) && u.Value != userId)
+            .OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).FirstOrDefault();
+        if (enemy.Key is null) return;
+        
+        await fightService.Fight(unit, enemy.Key);
+        
+        if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
+        if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id); 
     }
 
 
