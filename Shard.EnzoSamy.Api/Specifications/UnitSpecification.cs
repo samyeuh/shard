@@ -5,7 +5,7 @@ namespace Shard.EnzoSamy.Api.Specifications;
 
 public class UnitSpecification
 {
-    public string Id { get; init; }
+    public string? Id { get; init; }
     public string Type { get; init; }
     public string System { get; set; }
     public string? Planet { get; set; }
@@ -21,15 +21,27 @@ public class UnitSpecification
     private Task? Arrive { get; set; }
     private Task? ArriveMinus2Sec { get; set; }
     private IClock? _clock;
+    public string? UserId { get; set; }
 
     public UnitSpecification() { }
-
+    
     public UnitSpecification(SystemSpecification system, string type)
     {
         Id = Guid.NewGuid().ToString();
         Type = type;
         System = system.Name;
         Planet = null;
+        UserId = string.Empty;
+        SetCombatSpec();
+    }
+
+    public UnitSpecification(SystemSpecification system, string type, string userId)
+    {
+        Id = Guid.NewGuid().ToString();
+        Type = type;
+        System = system.Name;
+        Planet = null;
+        UserId = userId;
         SetCombatSpec();
     }
     
@@ -140,4 +152,6 @@ public class UnitSpecification
         var timeUntilArrival = estimatedArrivalTime - now;
         return timeUntilArrival ?? TimeSpan.Zero;
     }
+    
+    public string Url => $"/users/{UserId}/units/{Id}";
 }
