@@ -26,7 +26,7 @@ public class UnitService(UserService userService, SectorService sectorService, F
         );
     }
     
-    public DateTime CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime)
+    public DateTime CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime, bool isAdmin)
     {
         var travelTime = TimeSpan.Zero;
         if (unit.System != unit.DestinationSystem && unit.DestinationSystem != null)
@@ -35,7 +35,8 @@ public class UnitService(UserService userService, SectorService sectorService, F
         }
         
         travelTime += TimeSpan.FromSeconds(15);
-        unit.Planet = null;
+        if (!isAdmin) unit.Planet = null;
+        if (isAdmin) unit.DestinationPlanet = unit.Planet;
         return currentTime + travelTime;
     }
 

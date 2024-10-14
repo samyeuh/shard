@@ -60,6 +60,7 @@ public class UnitsController(
     [Route("/users/{userId}/units/{unitId}")]
     public async Task<ActionResult<UnitSpecification>> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
+        var isAdmin = User.IsInRole("admin");
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
@@ -72,13 +73,28 @@ public class UnitsController(
         }
 
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
+        
         if (unit == null)
         {
+            
+            if (updatedUnit.Type == "builder")
+            {
+                isAdmin = true;
+            }
+            if (!isAdmin) return Unauthorized();
             unit = unitService.CreateUnit(updatedUnit, userId);
+            
             if (unit is null) return BadRequest("Error");
         }
-            
-        
+
+        if (unit.Type == "scout")
+        {
+            if (!isAdmin) return Unauthorized();
+        }
+
+
+
+
         var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
         if (buildingNotConstruct != null)
         {
@@ -91,7 +107,7 @@ public class UnitsController(
         
         unit.DestinationSystem = updatedUnit.System;
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-        unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);
+        unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
         unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);  
         unitService.FightUnits(userId, unitId);
     

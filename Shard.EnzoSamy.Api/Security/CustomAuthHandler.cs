@@ -44,7 +44,7 @@ namespace Shard.EnzoSamy.Api.Security
 
                 if (username == _adminCredentials.Username && password == _adminCredentials.Password)
                 {
-                    var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.Role, "administrator") };
+                    var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.Role, "admin") };
                     var identity = new ClaimsIdentity(claims, Scheme.Name);
                     var principal = new ClaimsPrincipal(identity);
                     var ticket = new AuthenticationTicket(principal, Scheme.Name);
