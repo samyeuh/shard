@@ -3,10 +3,8 @@ using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
 
-public class FightService(IClock clock, List<FightService.Fight> fights)
+public class FightService(List<FightService.Fight> fights)
 {
-    private readonly IClock _clock = clock;
-
     public record Fight(UnitSpecification unit1, UnitSpecification unit2);
 
     public List<Fight> Fights = fights;
@@ -25,7 +23,8 @@ public class FightService(IClock clock, List<FightService.Fight> fights)
         
         
     }
-    public async Task StartFight(UnitSpecification unit1, UnitSpecification unit2)
+
+    public async Task StartFight(UnitSpecification unit1, UnitSpecification unit2, IClock clock)
     {
         checkFightPriority(unit1, unit2);
         if (IsInFight(unit2) != null) return;
@@ -34,9 +33,9 @@ public class FightService(IClock clock, List<FightService.Fight> fights)
         
         while (unit1.Health > 0 && unit2.Health > 0 && Fights.Contains(fight))
         {
-            await _clock.Delay(TimeSpan.FromSeconds(1));
+            await clock.Delay(TimeSpan.FromSeconds(1));
             
-            int currentSecond = _clock.Now.Second;
+            int currentSecond = clock.Now.Second;
             
             unit1.Attack(unit2, currentSecond);
             unit2.Attack(unit1, currentSecond);
