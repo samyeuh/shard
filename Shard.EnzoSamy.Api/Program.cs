@@ -24,6 +24,7 @@ builder.Services.AddSingleton(provider =>
 });
 
 builder.Services.AddSingleton(new List<UserSpecification>());
+builder.Services.AddSingleton(new List<FightService.Fight>());
 //builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SectorService>();

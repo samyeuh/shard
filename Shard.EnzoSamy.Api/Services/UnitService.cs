@@ -40,7 +40,7 @@ public class UnitService(UserService userService, SectorService sectorService, F
         return currentTime + travelTime;
     }
 
-    public async void FightUnits(string userId, string unitId)
+    public async void FightUnits(string userId, string unitId, IClock clock)
     {
         var user = userService.FindUser(userId);
         if (user is null) return;
@@ -48,17 +48,15 @@ public class UnitService(UserService userService, SectorService sectorService, F
         var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
         if (unit is null) return;
         
-        
-        
         var enemy = GetUnitInSystem(unit.System)
             .Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type) && u.Value != userId)
             .OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).FirstOrDefault();
         if (enemy.Key is null) return;
-        
-        await fightService.Fight(unit, enemy.Key);
+
+        await fightService.StartFight(unit, enemy.Key, clock);
         
         if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
-        if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id); 
+        if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id);
     }
 
 

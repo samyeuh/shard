@@ -58,7 +58,7 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public async Task<ActionResult<UnitSpecification>> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public async Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
         var isAdmin = User.IsInRole("admin");
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
@@ -109,7 +109,7 @@ public class UnitsController(
         unit.DestinationPlanet = updatedUnit.DestinationPlanet;
         unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
         unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);  
-        unitService.FightUnits(userId, unitId);
+        unitService.FightUnits(userId, unitId, clock);
     
         return unit;
     }
