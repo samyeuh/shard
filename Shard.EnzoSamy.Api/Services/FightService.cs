@@ -8,6 +8,7 @@ public class FightService(List<FightService.Fight> fights)
     public record Fight(UnitSpecification unit1, UnitSpecification unit2);
 
     public List<Fight> Fights = fights;
+    private IClock _clock;
 
 
     public void checkFightPriority(UnitSpecification attacker, UnitSpecification target)
@@ -30,12 +31,12 @@ public class FightService(List<FightService.Fight> fights)
         if (IsInFight(unit2) != null) return;
         Fight fight = new Fight(unit1, unit2);
         Fights.Add(fight);
+        _clock = clock;
         
         while (unit1.Health > 0 && unit2.Health > 0 && Fights.Contains(fight))
         {
-            await clock.Delay(TimeSpan.FromSeconds(1));
-            
-            int currentSecond = clock.Now.Second;
+            await _clock.Delay(TimeSpan.FromSeconds(1));
+            var currentSecond = _clock.Now.Second;
             
             unit1.Attack(unit2, currentSecond);
             unit2.Attack(unit1, currentSecond);

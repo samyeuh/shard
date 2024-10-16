@@ -7,7 +7,7 @@ public class UserSpecification
 {
     public string Id { get; set; }
     public string Pseudo { get; set; }
-    public string? DateOfCreation { get; set; }
+    public DateTime DateOfCreation { get; set; }
     public Dictionary<string, int?>? ResourcesQuantity { get; set; }
     public List<UnitSpecification> Units { get; set; }
     
@@ -19,7 +19,7 @@ public class UserSpecification
         Id = id;
         Pseudo = pseudo;
         Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
-        DateOfCreation = DateTime.Now.ToShortDateString();
+        DateOfCreation = DateTime.Now;
         ResourcesQuantity = _initializeResources();
         Units = units;
         Buildings = [];
