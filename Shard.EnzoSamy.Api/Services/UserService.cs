@@ -15,10 +15,11 @@ public class UserService
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UserRequest newUser)
+    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false)
     {
         var generatedUnits = _generateUnits();
-        var user = new UserSpecification(newUser.Id, newUser.Pseudo, generatedUnits);
+        if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
+        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, generatedUnits);
         _users.Add(user);
         return user;
     }
