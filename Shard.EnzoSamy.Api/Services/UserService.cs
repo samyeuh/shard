@@ -19,7 +19,7 @@ public class UserService
     {
         var generatedUnits = _generateUnits();
         if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
-        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, generatedUnits);
+        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, generatedUnits);
         _users.Add(user);
         return user;
     }

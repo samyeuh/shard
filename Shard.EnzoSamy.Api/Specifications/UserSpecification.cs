@@ -27,13 +27,20 @@ public class UserSpecification
         Buildings = [];
     }
 
-    public UserSpecification(string id, string pseudo, DateTime dateOfCreation, List<UnitSpecification> units)
+    public UserSpecification(string id, string pseudo, DateTime dateOfCreation, Dictionary<string, int?>? resourceQuantity, List<UnitSpecification> units)
     {
         Id = id;
         Pseudo = pseudo;
         Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
         DateOfCreation = dateOfCreation;
-        ResourcesQuantity = _initializeResources();
+        if (resourceQuantity != null)
+        {
+            ResourcesQuantity = resourceQuantity;
+        }
+        else
+        {
+            ResourcesQuantity = _initializeResources();
+        }
         Units = units;
         Buildings = []; 
     }
