@@ -3,9 +3,9 @@ using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 using Microsoft.AspNetCore.Authentication;
+using Shard.EnzoSamy.Api.Background;
 using Shard.EnzoSamy.Api.Security; 
 using MapGenerator = Shard.EnzoSamy.Api.MapGenerator;
-using SystemClock = Microsoft.Extensions.Internal.SystemClock;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +24,12 @@ builder.Services.AddSingleton(provider =>
 });
 
 builder.Services.AddSingleton(new List<UserSpecification>());
-builder.Services.AddSingleton(new List<FightService.Fight>());
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<SectorService>();
-builder.Services.AddScoped<UnitService>();
-builder.Services.AddScoped<ResourceService>();
-builder.Services.AddScoped<FightService>();
+builder.Services.AddSingleton<SectorService>();
+builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<UnitService>();
+builder.Services.AddSingleton<ResourceService>();
+builder.Services.AddSingleton<FightService>();
+builder.Services.AddHostedService<FightBackground>();
 
 // Add authentication service with custom handler
 builder.Services.AddAuthentication("BasicAuthentication")

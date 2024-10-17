@@ -4,7 +4,7 @@ using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
 
-public class UnitService(UserService userService, SectorService sectorService, FightService fightService, List<UserSpecification> userSpecifications)
+public class UnitService(UserService userService, SectorService sectorService, List<UserSpecification> userSpecifications)
 {
     /*public UnitSpecification? GetUnitForUser(string userId, string unitId)
     {
@@ -40,7 +40,7 @@ public class UnitService(UserService userService, SectorService sectorService, F
         return currentTime + travelTime;
     }
 
-    public async void FightUnits(string userId, string unitId, IClock clock)
+   /* public async void FightUnits(string userId, string unitId, IClock clock)
     {
         var user = userService.FindUser(userId);
         if (user is null) return;
@@ -52,12 +52,12 @@ public class UnitService(UserService userService, SectorService sectorService, F
             .Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type) && u.Value != userId)
             .OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).FirstOrDefault();
         if (enemy.Key is null) return;
-
-        await fightService.StartFight(unit, enemy.Key, clock);
+        
+        // await fightService.StartFight(unit, enemy.Key, clock);
         
         if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
         if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id);
-    }
+    }*/
 
 
     public Dictionary<UnitSpecification, string> GetUnitInSystem(String system)

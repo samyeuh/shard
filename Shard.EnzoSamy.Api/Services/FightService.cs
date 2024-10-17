@@ -3,83 +3,55 @@ using Shard.Shared.Core;
 
 namespace Shard.EnzoSamy.Api.Services;
 
-public class FightService(List<FightService.Fight> fights)
+public class FightService(List<UserSpecification> users, UnitService unitService, IClock clock)
 {
-    public record Fight(UnitSpecification unit1, UnitSpecification unit2);
-
-    public List<Fight> Fights = fights;
-    private IClock _clock;
-
-
-    public void checkFightPriority(UnitSpecification attacker, UnitSpecification target)
+    public void PerformFights()
     {
-        var fighter = IsInFight(target);
-        if (fighter != null && fighter != attacker)
+        List<string> fightType = ["cruiser", "fighter", "bomber"];
+        var allUnits = users.SelectMany(user => user.Units).ToList();
+        var combatUnits = allUnits.Where(u => fightType.Contains(u.Type)).ToList();
+
+        foreach (var attacker in combatUnits)
         {
-            if (target.TypePriority.IndexOf(fighter.Type) > target.TypePriority.IndexOf(attacker.Type))
+            UnitSpecification? target;
+            if (attacker.Planet == null)
             {
-                StopFight(fighter, target);
+                target = combatUnits.
+                    Where(u => u.Id != attacker.Id && attacker.System == u.System).
+                    OrderBy(u => attacker.TypePriority.IndexOf(u.Type))
+                    .FirstOrDefault();
+            } else {
+                target = combatUnits.Where(u => u.Id != attacker.Id && attacker.Planet == u.Planet)
+                    .OrderBy(u => attacker.TypePriority.IndexOf(u.Type)).FirstOrDefault();
+            }
+
+            if (target is null) continue;
+            
+            attacker.Attack(target, clock.Now.Second);
+
+            /*var enemy = units.Where(u => u.Id != unit.Id).OrderBy(u => unit.TypePriority.IndexOf(u.Type)).FirstOrDefault();
+            if (enemy is null) continue;
+            Fight f = new Fight(unit, enemy);
+            Fights.Add(f);*/
+        }
+
+        foreach (var unit in allUnits)
+        {
+            var user = users.FirstOrDefault(u => u.Units != null && u.Units.Contains(unit));
+            if (user is null) continue;
+            if (unit.Health <= 0)
+            {
+                if (unit.Id != null) unitService.DestroyUnit(user.Id, unit.Id);
             }
         }
-        
-        
+            //if unit.health <= 0
+            //destroy -> remove from user list
     }
 
-    public async Task StartFight(UnitSpecification unit1, UnitSpecification unit2, IClock clock)
+    public async Task StartFights(CancellationToken stoppingToken)
     {
-        checkFightPriority(unit1, unit2);
-        if (IsInFight(unit2) != null) return;
-        Fight fight = new Fight(unit1, unit2);
-        Fights.Add(fight);
-        _clock = clock;
-        
-        while (unit1.Health > 0 && unit2.Health > 0 && Fights.Contains(fight))
-        {
-            await _clock.Delay(TimeSpan.FromSeconds(1));
-            var currentSecond = _clock.Now.Second;
-            
-            unit1.Attack(unit2, currentSecond);
-            unit2.Attack(unit1, currentSecond);
-            
-            if (unit1.Health <= 0 || unit2.Health <= 0)
-            {
-                break; 
-            }
-        }
+        clock.CreateTimer(_ => PerformFights(), null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
     }
-
-    public void StopFight(UnitSpecification unit1, UnitSpecification unit2)
-    {
-        var fightsToRemove = Fights
-            .Where(f => (f.unit1 == unit1 && f.unit2 == unit2) || (f.unit1 == unit2 && f.unit2 == unit1))
-            .ToList();
-        
-        foreach (var fight in fightsToRemove)
-        {
-            Fights.Remove(fight);
-        }
-    }
-
-    public void StopFightOfAUnit(UnitSpecification unit)
-    {
-        var fightsToRemove = Fights
-            .Where(f => (f.unit1 == unit || f.unit2 == unit))
-            .ToList();
-        
-        foreach (var fight in fightsToRemove)
-        {
-            Fights.Remove(fight);
-        }
-    }
-
-    public UnitSpecification IsInFight(UnitSpecification unit)
-    {
-        foreach (Fight fight in Fights)
-        {
-            if (fight.unit1 == unit) return fight.unit2;
-            if (fight.unit2 == unit) return fight.unit1;
-        }
-
-        return null;
-    }
+    
+    
 }

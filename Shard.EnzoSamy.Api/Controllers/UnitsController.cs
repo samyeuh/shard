@@ -81,9 +81,6 @@ public class UnitsController(
             if (unit is null) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
         }
 
-
-
-
         var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
         if (buildingNotConstruct != null)
         {
@@ -108,9 +105,6 @@ public class UnitsController(
             unit.DestinationSystem = updatedUnit.System;
             unit.DestinationPlanet = updatedUnit.Planet;
         }
-        
-        unitService.FightUnits(userId, unitId, clock);
-        
     
         return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
