@@ -19,7 +19,9 @@ public class UserService
     {
         var generatedUnits = _generateUnits();
         if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
-        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, generatedUnits);
+        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, newUser.Buildings,generatedUnits);
+        var usersId = _users.Select(user => user.Id).ToList();
+        if (usersId.Contains(newUser.Id)) _users.Remove(_users.Where(user => user.Id == newUser.Id).First());
         _users.Add(user);
         return user;
     }
