@@ -129,7 +129,7 @@ public class UnitSpecification
         if (Arrive != null) await Arrive;
     }
 
-    private void ArriveAtDestination()
+    public void ArriveAtDestination()
     {
         if(DestinationSystem is not null) 
             System = DestinationSystem;

@@ -93,12 +93,24 @@ public class UnitsController(
                 user.Buildings.Remove(buildingNotConstruct);
             }
         }
+
+        if (updatedUnit.DestinationSystem != null || updatedUnit.DestinationPlanet != null)
+        {
+            unit!.DestinationSystem = updatedUnit.DestinationSystem;
+            unit.DestinationPlanet = updatedUnit.DestinationPlanet;
+            unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
+            unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+        }
+        else
+        {
+            unit.System = updatedUnit.System;
+            unit.Planet = updatedUnit.Planet;
+            unit.DestinationSystem = updatedUnit.System;
+            unit.DestinationPlanet = updatedUnit.Planet;
+        }
         
-        unit.DestinationSystem = updatedUnit.System;
-        unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-        unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
-        unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
         unitService.FightUnits(userId, unitId, clock);
+        
     
         return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
