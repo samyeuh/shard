@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Enumerations;
@@ -10,7 +12,7 @@ namespace Shard.EnzoSamy.Api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class BuildingController(UserService userService, SectorService sectorService, IClock clock) : ControllerBase
+    public class BuildingController(UserService userService, UnitService unitService, SectorService sectorService, IClock clock) : ControllerBase
     {
         // Méthode existante : BuildBuildingOnPlanet
         [HttpPost]
@@ -83,20 +85,8 @@ namespace Shard.EnzoSamy.Api.Controllers
             }
 
             // Définir les coûts en fonction du type d'unité
-            var requiredResources = new Dictionary<string, int>();
-            switch (unitRequest.Type.ToLower())
-            {
-                case "scout":
-                    requiredResources["carbon"] = 5;
-                    requiredResources["iron"] = 5;
-                    break;
-                case "builder":
-                    requiredResources["carbon"] = 5;
-                    requiredResources["iron"] = 10;
-                    break;
-                default:
-                    return BadRequest("Invalid unit type.");
-            }
+            var requiredResources = unitService.GetRequiredResources(unitRequest.Type.ToLower());
+            if (!requiredResources.Any()) return BadRequest("Invalid unit type");
 
             // Vérifier les ressources de l'utilisateur
             if (!userService.HasSufficientResources(user, requiredResources))

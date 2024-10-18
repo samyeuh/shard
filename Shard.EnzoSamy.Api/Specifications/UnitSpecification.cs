@@ -22,6 +22,7 @@ public class UnitSpecification
     private Task? ArriveMinus2Sec { get; set; }
     private IClock? _clock;
     public string? UserId { get; set; }
+    public Dictionary<string, int?>? ResourceQuantity { get; set; } = new Dictionary<string, int?>();
 
     public UnitSpecification() { }
     

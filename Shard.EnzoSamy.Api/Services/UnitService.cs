@@ -96,5 +96,39 @@ public class UnitService(UserService userService, SectorService sectorService, L
         user.Units.Remove(unit);
         return true;
     }
+
+    public Dictionary<string, int>? GetRequiredResources(string unitType)
+    {
+        var requiredResources = new Dictionary<string, int>();
+        switch (unitType)
+        {
+            case "scout":
+                requiredResources["carbon"] = 5;
+                requiredResources["iron"] = 5;
+                break;
+            case "builder":
+                requiredResources["carbon"] = 5;
+                requiredResources["iron"] = 10;
+                break;
+            case "fighter":
+                requiredResources["aluminium"] = 10;
+                requiredResources["iron"] = 20;
+                break;
+            case "bomber":
+                requiredResources["titanium"] = 10;
+                requiredResources["iron"] = 30;
+                break;
+            case "cruiser":
+                requiredResources["gold"] = 20;
+                requiredResources["iron"] = 60;
+                break;
+            case "cargo":
+                requiredResources["carbon"] = 10;
+                requiredResources["iron"] = 10;
+                requiredResources["gold"] = 5;
+                break;
+        }
+        return requiredResources;
+    }
     
 }
