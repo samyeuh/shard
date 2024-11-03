@@ -90,6 +90,8 @@ public class UnitsController(
                 user.Buildings.Remove(buildingNotConstruct);
             }
         }
+        
+        
 
         if (updatedUnit.DestinationSystem != null || updatedUnit.DestinationPlanet != null)
         {
@@ -104,19 +106,24 @@ public class UnitsController(
             unit.Planet = updatedUnit.Planet;
             unit.DestinationSystem = updatedUnit.System;
             unit.DestinationPlanet = updatedUnit.Planet;
+            
+            if (updatedUnit.ResourcesQuantity is { Count: > 0 })
+            {
+            
+                if (unit.Type != "cargo") return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo"));
+                if (!user.Buildings.Any(b => b.Type == "starport"))
+                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport"));
+                if (unitService.checkIfUnitHasMoreRessourceThanUser(updatedUnit, user)) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Can not load a cargo more than the resource of the user"));
+            
+                userService.removeResourceToUser(user, updatedUnit.ResourcesQuantity);
+                unitService.addResourceToUnit(unit, updatedUnit.ResourcesQuantity);
+            }
+            
         }
         
-        if (updatedUnit.ResourcesQuantity != null && updatedUnit.ResourcesQuantity.Count > 0)
-        {
-            
-            if (unit.Type != "cargo") return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
-            if (!user.Buildings.Any(b => b.Type == "starport"))
-                return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
-            if (unitService.checkIfUnitHasMoreRessourceThanUser(updatedUnit, user)) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
-            
-            
-            unit.ResourcesQuantity = updatedUnit.ResourcesQuantity;
-        }
+        
+        
+        
     
         return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }

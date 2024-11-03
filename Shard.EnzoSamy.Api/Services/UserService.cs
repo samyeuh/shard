@@ -1,4 +1,5 @@
-﻿using Shard.EnzoSamy.Api.Contracts;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
@@ -76,6 +77,38 @@ public class UserService
     {
         return requiredResources.All(resource =>
             user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
+    }
+
+    public bool removeResourceToUser(UserSpecification user, Dictionary<string, int?> ressources)
+    {
+        foreach (var ressource in ressources)
+        {
+            if (user.ResourcesQuantity[ressource.Key] - ressource.Value < 0)
+            {
+                return false;
+            }
+            else
+            {
+                user.ResourcesQuantity[ressource.Key] -= ressource.Value;
+            } 
+        }
+
+        return true;
+    }
+
+    public void AddResourceToUser(UserSpecification user, Dictionary<string, int?> resources)
+    {
+        foreach (var ressource in resources)
+        {
+            if (user.ResourcesQuantity.ContainsKey(ressource.Key))
+            {
+                user.ResourcesQuantity[ressource.Key] += ressource.Value;
+            }
+            else
+            {
+                user.ResourcesQuantity.Add(ressource.Key, ressource.Value);
+            }
+        }
     }
 
 }

@@ -40,25 +40,6 @@ public class UnitService(UserService userService, SectorService sectorService, L
         return currentTime + travelTime;
     }
 
-   /* public async void FightUnits(string userId, string unitId, IClock clock)
-    {
-        var user = userService.FindUser(userId);
-        if (user is null) return;
-        
-        var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
-        if (unit is null) return;
-        
-        var enemy = GetUnitInSystem(unit.System)
-            .Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type) && u.Value != userId)
-            .OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).FirstOrDefault();
-        if (enemy.Key is null) return;
-        
-        // await fightService.StartFight(unit, enemy.Key, clock);
-        
-        if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
-        if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id);
-    }*/
-
 
     public Dictionary<UnitSpecification, string> GetUnitInSystem(String system)
     {
@@ -143,6 +124,38 @@ public class UnitService(UserService userService, SectorService sectorService, L
         }
 
         return false;
+    }
+
+    public void addResourceToUnit(UnitSpecification unitSpecification, Dictionary<string, int?> ressources)
+    {
+        foreach (var ressource in ressources)
+        {
+            if (unitSpecification.ResourcesQuantity.ContainsKey(ressource.Key))
+            {
+                unitSpecification.ResourcesQuantity[ressource.Key] += ressource.Value;
+            }
+            else
+            {
+                unitSpecification.ResourcesQuantity.Add(ressource.Key, ressource.Value);
+            }
+        }
+    }
+
+    public bool removeResourceToUnit(UnitSpecification unit, Dictionary<string, int?> resources)
+    {
+        foreach (var ressource in resources)
+        {
+            if (unit.ResourcesQuantity[ressource.Key] - ressource.Value < 0)
+            {
+                return false;
+            }
+            else
+            {
+                unit.ResourcesQuantity[ressource.Key] -= ressource.Value;
+            } 
+        }
+
+        return true;
     }
     
 }
