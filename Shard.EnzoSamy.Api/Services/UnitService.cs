@@ -141,21 +141,42 @@ public class UnitService(UserService userService, SectorService sectorService, L
         }
     }
 
-    public bool removeResourceToUnit(UnitSpecification unit, Dictionary<string, int?> resources)
+    public void removeResourceToUnit(UnitSpecification unit, Dictionary<string, int?> resources)
     {
-        foreach (var ressource in resources)
+        foreach (var resource in resources)
         {
-            if (unit.ResourcesQuantity[ressource.Key] - ressource.Value < 0)
+            // Vérifie d'abord si l'unité a bien cette ressource dans son inventaire
+            if (!unit.ResourcesQuantity.ContainsKey(resource.Key))
             {
-                return false;
+                throw new KeyNotFoundException($"Resource '{resource.Key}' not found in the unit's inventory.");
             }
-            else
+        
+            // Ensuite, vérifie que la quantité n'est pas négative après soustraction
+            if (unit.ResourcesQuantity[resource.Key] - resource.Value < 0)
             {
-                unit.ResourcesQuantity[ressource.Key] -= ressource.Value;
-            } 
+                throw new InvalidOperationException($"Insufficient quantity of '{resource.Key}' in the unit to remove {resource.Value}.");
+            }
+        
+            // Effectue la soustraction si tout est vérifié
+            unit.ResourcesQuantity[resource.Key] -= resource.Value;
+        }
+    }
+
+
+    public Dictionary<string, int?> calculateUnload(UnitSpecification unit, Dictionary<string, int?> resources)
+    {
+        Dictionary<string, int?> newResource = new Dictionary<string, int?>();
+        foreach (var resource in resources)
+        {
+            if (unit.ResourcesQuantity.ContainsKey(resource.Key) &&
+                unit.ResourcesQuantity[resource.Key].Value != resource.Value)
+            {
+                int? diff = unit.ResourcesQuantity[resource.Key].Value - resource.Value;
+                newResource.Add(resource.Key, diff);
+            }
         }
 
-        return true;
+        return newResource;
     }
-    
+
 }

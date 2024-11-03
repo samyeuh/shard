@@ -57,14 +57,18 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId,
+        [FromBody] UnitSpecification updatedUnit)
     {
         var isAdmin = User.IsInRole("admin");
-        logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
+        logger.LogInformation(
+            $"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
-            return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("The unitId in the URL does not match the Id in the body."));
+            return Task.FromResult<ActionResult<UnitSpecification>>(
+                BadRequest("The unitId in the URL does not match the Id in the body."));
         }
+
         var user = userService.FindUser(userId);
         if (user == null)
         {
@@ -72,12 +76,12 @@ public class UnitsController(
         }
 
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
-        
+
         if (unit == null)
         {
             if (!isAdmin) return Task.FromResult<ActionResult<UnitSpecification>>(Unauthorized());
             unit = unitService.CreateUnit(updatedUnit, userId);
-            
+
             if (unit is null) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
         }
 
@@ -86,12 +90,13 @@ public class UnitsController(
         {
             if (unit.Planet != updatedUnit.DestinationPlanet)
             {
-                logger.LogInformation($"Cancelling building construction for building {buildingNotConstruct.Id} as the builder is moving away.");
+                logger.LogInformation(
+                    $"Cancelling building construction for building {buildingNotConstruct.Id} as the builder is moving away.");
                 user.Buildings.Remove(buildingNotConstruct);
             }
         }
-        
-        
+
+
 
         if (updatedUnit.DestinationSystem != null || updatedUnit.DestinationPlanet != null)
         {
@@ -106,25 +111,48 @@ public class UnitsController(
             unit.Planet = updatedUnit.Planet;
             unit.DestinationSystem = updatedUnit.System;
             unit.DestinationPlanet = updatedUnit.Planet;
-            
-            if (updatedUnit.ResourcesQuantity is { Count: > 0 })
-            {
-            
-                if (unit.Type != "cargo") return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo"));
-                if (!user.Buildings.Any(b => b.Type == "starport"))
-                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport"));
-                if (unitService.checkIfUnitHasMoreRessourceThanUser(updatedUnit, user)) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Can not load a cargo more than the resource of the user"));
-            
-                userService.removeResourceToUser(user, updatedUnit.ResourcesQuantity);
-                unitService.addResourceToUnit(unit, updatedUnit.ResourcesQuantity);
-            }
-            
         }
         
-        
-        
-        
-    
+        if (updatedUnit.ResourcesQuantity is { Count: > 0 })
+            {
+
+                if (unit.Type != "cargo")
+                    return Task.FromResult<ActionResult<UnitSpecification>>(
+                        BadRequest("Cannot unload or load a unit if it is not a cargo"));
+                if (!user.Buildings.Any(b => b.Type == "starport"))
+                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport"));
+                try
+                {
+                    if (unitService.checkIfUnitHasMoreRessourceThanUser(updatedUnit, user))
+                    {
+                        if (unit.ResourcesQuantity.All(r => r.Value == 0))
+                            return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("blabla"));
+                        var resourceQuantity = unitService.calculateUnload(unit, updatedUnit.ResourcesQuantity );
+                        unitService.removeResourceToUnit(unit, resourceQuantity);
+                        userService.AddResourceToUser(user, resourceQuantity);
+                    }
+                    else
+                    {
+                        userService.removeResourceToUser(user, updatedUnit.ResourcesQuantity);
+                        unitService.addResourceToUnit(unit, updatedUnit.ResourcesQuantity);
+                    }
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    // Log et retour d'une réponse explicite pour ressource manquante
+                    logger.LogWarning($"Resource missing for unit {unitId}: {ex.Message}");
+                    return Task.FromResult<ActionResult<UnitSpecification>>(
+                        BadRequest("Resource not available in the unit's inventory"));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Log et retour d'une réponse explicite pour quantité insuffisante
+                    logger.LogWarning($"Insufficient resource quantity for unit {unitId}: {ex.Message}");
+                    return Task.FromResult<ActionResult<UnitSpecification>>(
+                        BadRequest("Insufficient resource quantity for the operation"));
+                }
+            }
+
         return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
 

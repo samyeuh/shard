@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
@@ -79,21 +80,25 @@ public class UserService
             user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
     }
 
-    public bool removeResourceToUser(UserSpecification user, Dictionary<string, int?> ressources)
+    public void removeResourceToUser(UserSpecification user, Dictionary<string, int?> resources)
     {
-        foreach (var ressource in ressources)
+        foreach (var resource in resources)
         {
-            if (user.ResourcesQuantity[ressource.Key] - ressource.Value < 0)
+            // Vérifie d'abord si l'unité a bien cette ressource dans son inventaire
+            if (!user.ResourcesQuantity.ContainsKey(resource.Key))
             {
-                return false;
+                throw new KeyNotFoundException($"Resource '{resource.Key}' not found in the unit's inventory.");
             }
-            else
+        
+            // Ensuite, vérifie que la quantité n'est pas négative après soustraction
+            if (user.ResourcesQuantity[resource.Key] - resource.Value < 0)
             {
-                user.ResourcesQuantity[ressource.Key] -= ressource.Value;
-            } 
+                throw new InvalidOperationException($"Insufficient quantity of '{resource.Key}' in the unit to remove {resource.Value}.");
+            }
+        
+            // Effectue la soustraction si tout est vérifié
+            user.ResourcesQuantity[resource.Key] -= resource.Value;
         }
-
-        return true;
     }
 
     public void AddResourceToUser(UserSpecification user, Dictionary<string, int?> resources)
