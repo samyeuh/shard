@@ -130,5 +130,19 @@ public class UnitService(UserService userService, SectorService sectorService, L
         }
         return requiredResources;
     }
+
+    public bool checkIfUnitHasMoreRessourceThanUser(UnitSpecification unit, UserSpecification user)
+    {
+        foreach (var ressource in unit.ResourcesQuantity)
+        {
+            if (user.ResourcesQuantity.TryGetValue(ressource.Key, out int? userQuantity) &&
+                ressource.Value > userQuantity)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
 }

@@ -100,6 +100,7 @@ public class BuildingSpecification(string type, string planet, string system, st
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during extraction: {ex.Message}");
+                StopExtract();
             }
         }
     }

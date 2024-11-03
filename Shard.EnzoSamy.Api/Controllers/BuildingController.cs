@@ -45,8 +45,7 @@ namespace Shard.EnzoSamy.Api.Controllers
             }
             else if (buildingSpecification.Type == "starport")
             {
-                // Le starport n'a pas besoin de catégorie de ressource
-                buildingSpecification.ResourceCategory = null;
+                buildingSpecification.BuilderId = buildingSpecification.BuilderId;
             }
             else
             {
