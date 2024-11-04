@@ -126,10 +126,8 @@ public class UnitService(UserService userService, SectorService sectorService, L
         return false;
     }
 
-    public void addResourceToUnit(UnitSpecification unitSpecification, Dictionary<string, int?> ressources)
+    public void addResourceToUnit(UnitSpecification unitSpecification, KeyValuePair<string, int?> ressource)
     {
-        foreach (var ressource in ressources)
-        {
             if (unitSpecification.ResourcesQuantity.ContainsKey(ressource.Key))
             {
                 unitSpecification.ResourcesQuantity[ressource.Key] += ressource.Value;
@@ -138,45 +136,44 @@ public class UnitService(UserService userService, SectorService sectorService, L
             {
                 unitSpecification.ResourcesQuantity.Add(ressource.Key, ressource.Value);
             }
-        }
     }
 
-    public void removeResourceToUnit(UnitSpecification unit, Dictionary<string, int?> resources)
+    public void removeResourceToUnit(UnitSpecification unit, KeyValuePair<string, int?> resource)
     {
-        foreach (var resource in resources)
-        {
-            // Vérifie d'abord si l'unité a bien cette ressource dans son inventaire
+           
             if (!unit.ResourcesQuantity.ContainsKey(resource.Key))
             {
-                throw new KeyNotFoundException($"Resource '{resource.Key}' not found in the unit's inventory.");
+                return;
             }
         
-            // Ensuite, vérifie que la quantité n'est pas négative après soustraction
+            
             if (unit.ResourcesQuantity[resource.Key] - resource.Value < 0)
             {
-                throw new InvalidOperationException($"Insufficient quantity of '{resource.Key}' in the unit to remove {resource.Value}.");
+                return;
             }
         
-            // Effectue la soustraction si tout est vérifié
+            
             unit.ResourcesQuantity[resource.Key] -= resource.Value;
-        }
     }
 
 
-    public Dictionary<string, int?> calculateUnload(UnitSpecification unit, Dictionary<string, int?> resources)
+    public Dictionary<string, int?> calculateLoadUnload(UnitSpecification unit, Dictionary<string, int?> resources)
     {
-        Dictionary<string, int?> newResource = new Dictionary<string, int?>();
+        Dictionary<string, int?> newResources = new Dictionary<string, int?>();
         foreach (var resource in resources)
         {
-            if (unit.ResourcesQuantity.ContainsKey(resource.Key) &&
-                unit.ResourcesQuantity[resource.Key].Value != resource.Value)
+            if (unit.ResourcesQuantity.ContainsKey(resource.Key))
             {
-                int? diff = unit.ResourcesQuantity[resource.Key].Value - resource.Value;
-                newResource.Add(resource.Key, diff);
+                var value = unit.ResourcesQuantity[resource.Key].Value;
+                newResources[resource.Key] = resource.Value - value;
+            }
+            else
+            {
+                newResources[resource.Key] = resource.Value;
             }
         }
 
-        return newResource;
+        return newResources;
     }
 
 }

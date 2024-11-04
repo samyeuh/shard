@@ -80,40 +80,30 @@ public class UserService
             user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
     }
 
-    public void removeResourceToUser(UserSpecification user, Dictionary<string, int?> resources)
+    public void removeResourceToUser(UserSpecification user, KeyValuePair<string, int?> resource)
     {
-        foreach (var resource in resources)
-        {
-            // Vérifie d'abord si l'unité a bien cette ressource dans son inventaire
             if (!user.ResourcesQuantity.ContainsKey(resource.Key))
             {
                 throw new KeyNotFoundException($"Resource '{resource.Key}' not found in the unit's inventory.");
             }
-        
-            // Ensuite, vérifie que la quantité n'est pas négative après soustraction
+
             if (user.ResourcesQuantity[resource.Key] - resource.Value < 0)
             {
                 throw new InvalidOperationException($"Insufficient quantity of '{resource.Key}' in the unit to remove {resource.Value}.");
             }
-        
-            // Effectue la soustraction si tout est vérifié
             user.ResourcesQuantity[resource.Key] -= resource.Value;
-        }
     }
 
-    public void AddResourceToUser(UserSpecification user, Dictionary<string, int?> resources)
-    {
-        foreach (var ressource in resources)
-        {
-            if (user.ResourcesQuantity.ContainsKey(ressource.Key))
+    public void AddResourceToUser(UserSpecification user, KeyValuePair<string, int?> resource)
+    { 
+        if (user.ResourcesQuantity.ContainsKey(resource.Key))
             {
-                user.ResourcesQuantity[ressource.Key] += ressource.Value;
+                user.ResourcesQuantity[resource.Key] += resource.Value;
             }
             else
             {
-                user.ResourcesQuantity.Add(ressource.Key, ressource.Value);
+                user.ResourcesQuantity.Add(resource.Key, resource.Value);
             }
-        }
     }
 
 }

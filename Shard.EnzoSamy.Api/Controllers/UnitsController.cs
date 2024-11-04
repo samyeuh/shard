@@ -115,26 +115,35 @@ public class UnitsController(
         
         if (updatedUnit.ResourcesQuantity is { Count: > 0 })
             {
-
                 if (unit.Type != "cargo")
-                    return Task.FromResult<ActionResult<UnitSpecification>>(
-                        BadRequest("Cannot unload or load a unit if it is not a cargo"));
-                if (!user.Buildings.Any(b => b.Type == "starport"))
+                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo"));
+                
+                if (!user.Buildings.Any(b => b.Type == "starport" ))
                     return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport"));
+                
+                /* if (updatedUnit.DestinationPlanet == null)
+                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport 2")); */
+                // calculer ce qu'il faut enlever et rajouter
+                // l'enlever et le rajouter
+
                 try
                 {
-                    if (unitService.checkIfUnitHasMoreRessourceThanUser(updatedUnit, user))
+                    var resourceQuantity = unitService.calculateLoadUnload(unit, updatedUnit.ResourcesQuantity);
+                    foreach (var resource in resourceQuantity)
                     {
-                        if (unit.ResourcesQuantity.All(r => r.Value == 0))
-                            return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("blabla"));
-                        var resourceQuantity = unitService.calculateUnload(unit, updatedUnit.ResourcesQuantity );
-                        unitService.removeResourceToUnit(unit, resourceQuantity);
-                        userService.AddResourceToUser(user, resourceQuantity);
-                    }
-                    else
-                    {
-                        userService.removeResourceToUser(user, updatedUnit.ResourcesQuantity);
-                        unitService.addResourceToUnit(unit, updatedUnit.ResourcesQuantity);
+                        if (resource.Value < 0)
+                        {
+                            int? valAbsolue = resource.Value.HasValue ? Math.Abs(resource.Value.Value) : null;
+                            KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, valAbsolue);
+                            unitService.removeResourceToUnit(unit, resourceKVP);
+                            userService.AddResourceToUser(user, resourceKVP);
+                        }
+                        else
+                        {
+                            KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, resource.Value);
+                            userService.removeResourceToUser(user, resourceKVP);
+                            unitService.addResourceToUnit(unit, resourceKVP);
+                        }
                     }
                 }
                 catch (KeyNotFoundException ex)
