@@ -37,12 +37,12 @@ public class UnitSpecification
         SetCombatSpec();
     }
 
-    public UnitSpecification(SystemSpecification system, string type, string userId)
+    public UnitSpecification(SystemSpecification system, PlanetSpecification planet, string type, string userId)
     {
         Id = Guid.NewGuid().ToString();
         Type = type;
         System = system.Name;
-        Planet = null;
+        DestinationPlanet = planet.Name;
         UserId = userId;
         SetCombatSpec();
     }
@@ -113,7 +113,7 @@ public class UnitSpecification
         }
     }
 
-    public void StartTravel(string destinationSystem, string destinationPlanet, DateTime estimatedArrivalTime, IClock? clock)
+    public void StartTravel(string destinationSystem, string destinationPlanet, DateTime? estimatedArrivalTime, IClock? clock)
     {
         DestinationSystem = destinationSystem;
         DestinationPlanet = destinationPlanet;
@@ -121,7 +121,11 @@ public class UnitSpecification
         _clock = clock;
         
         var timeUntilArrival = CalculateEstimatedArrivalTime(estimatedArrivalTime);
-        Arrive = _clock.Delay(timeUntilArrival).ContinueWith(_ => ArriveAtDestination());
+        Arrive = Task.Run(async () =>
+        {
+            await _clock.Delay(timeUntilArrival);
+            ArriveAtDestination();
+        });
         ArriveMinus2Sec = _clock.Delay(timeUntilArrival-TimeSpan.FromSeconds(2));
     }
 
@@ -133,13 +137,17 @@ public class UnitSpecification
 
     public void ArriveAtDestination()
     {
-        if(DestinationSystem is not null) 
+        if (DestinationSystem is not null) 
             System = DestinationSystem;
-        Planet = DestinationPlanet;
+        if (DestinationPlanet is not null)
+        {
+            Planet = DestinationPlanet;
+        }
+        
         DestinationSystem = null;
         DestinationPlanet = null;
         EstimatedTimeOfArrival = null;
-
+        
         if (Arrive is { IsCompleted: false })
         {
             Arrive = Task.CompletedTask;

@@ -57,7 +57,7 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId,
+    public async Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId,
         [FromBody] UnitSpecification updatedUnit)
     {
         var isAdmin = User.IsInRole("admin");
@@ -65,24 +65,24 @@ public class UnitsController(
             $"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
-            return Task.FromResult<ActionResult<UnitSpecification>>(
+            return await Task.FromResult<ActionResult<UnitSpecification>>(
                 BadRequest("The unitId in the URL does not match the Id in the body."));
         }
 
         var user = userService.FindUser(userId);
         if (user == null)
         {
-            return Task.FromResult<ActionResult<UnitSpecification>>(NotFound($"User with ID {userId} not found."));
+            return await Task.FromResult<ActionResult<UnitSpecification>>(NotFound($"User with ID {userId} not found."));
         }
 
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
 
         if (unit == null)
         {
-            if (!isAdmin) return Task.FromResult<ActionResult<UnitSpecification>>(Unauthorized());
+            if (!isAdmin) return await Task.FromResult<ActionResult<UnitSpecification>>(Unauthorized());
             unit = unitService.CreateUnit(updatedUnit, userId);
 
-            if (unit is null) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
+            if (unit is null) return await Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
         }
 
         var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
@@ -96,73 +96,56 @@ public class UnitsController(
             }
         }
 
-
-
         if (updatedUnit.DestinationSystem != null || updatedUnit.DestinationPlanet != null)
         {
             unit!.DestinationSystem = updatedUnit.DestinationSystem;
             unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-            unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
-            unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+            var travelTime =  unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
+            if ((unit.Planet != null && unit.DestinationPlanet == null) || travelTime.TotalSeconds > 0)
+                unit.EstimatedTimeOfArrival = clock.Now + travelTime;
+            unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival, clock);
         }
         else
         {
-            unit.System = updatedUnit.System;
-            unit.Planet = updatedUnit.Planet;
             unit.DestinationSystem = updatedUnit.System;
             unit.DestinationPlanet = updatedUnit.Planet;
         }
         
-        if (updatedUnit.ResourcesQuantity is { Count: > 0 })
-            {
-                if (unit.Type != "cargo")
-                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo"));
-                
-                if (!user.Buildings.Any(b => b.Type == "starport" ))
-                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport"));
-                
-                /* if (updatedUnit.DestinationPlanet == null)
-                    return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot load if no starport 2")); */
-                // calculer ce qu'il faut enlever et rajouter
-                // l'enlever et le rajouter
+        if (updatedUnit.ResourcesQuantity is { Count: > 0 } && !unitService.SameResourceQuantity(unit.ResourcesQuantity, updatedUnit.ResourcesQuantity))
+        {
+            if (updatedUnit.Type != "cargo")
+                return await Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo"));
+            
+            if (updatedUnit.DestinationPlanet == null)
+                return await Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Cannot unload or load a unit if it is not a cargo 2"));
 
-                try
+            try
+            {
+                var resourceQuantity = unitService.calculateLoadUnload(unit, updatedUnit.ResourcesQuantity);
+                foreach (var resource in resourceQuantity)
                 {
-                    var resourceQuantity = unitService.calculateLoadUnload(unit, updatedUnit.ResourcesQuantity);
-                    foreach (var resource in resourceQuantity)
+                    if (resource.Value < 0)
                     {
-                        if (resource.Value < 0)
-                        {
-                            int? valAbsolue = resource.Value.HasValue ? Math.Abs(resource.Value.Value) : null;
-                            KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, valAbsolue);
-                            unitService.removeResourceToUnit(unit, resourceKVP);
-                            userService.AddResourceToUser(user, resourceKVP);
-                        }
-                        else
-                        {
-                            KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, resource.Value);
-                            userService.removeResourceToUser(user, resourceKVP);
-                            unitService.addResourceToUnit(unit, resourceKVP);
-                        }
+                        int? valAbsolue = resource.Value.HasValue ? Math.Abs(resource.Value.Value) : null;
+                        KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, valAbsolue);
+                        unitService.removeResourceToUnit(unit, resourceKVP);
+                        userService.AddResourceToUser(user, resourceKVP);
+                    }
+                    else
+                    {
+                        KeyValuePair<string, int?> resourceKVP = new KeyValuePair<string, int?>(resource.Key, resource.Value);
+                        userService.removeResourceToUser(user, resourceKVP);
+                        unitService.addResourceToUnit(unit, resourceKVP);
                     }
                 }
-                catch (KeyNotFoundException ex)
-                {
-                    // Log et retour d'une réponse explicite pour ressource manquante
-                    logger.LogWarning($"Resource missing for unit {unitId}: {ex.Message}");
-                    return Task.FromResult<ActionResult<UnitSpecification>>(
-                        BadRequest("Resource not available in the unit's inventory"));
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Log et retour d'une réponse explicite pour quantité insuffisante
-                    logger.LogWarning($"Insufficient resource quantity for unit {unitId}: {ex.Message}");
-                    return Task.FromResult<ActionResult<UnitSpecification>>(
-                        BadRequest("Insufficient resource quantity for the operation"));
-                }
             }
-
-        return Task.FromResult<ActionResult<UnitSpecification>>(unit);
+            catch (Exception ex)
+            {
+                return await Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Resource not available in the unit's inventory OR Insufficient resource quantity for the operation"));
+            }
+        }
+        
+        return await Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
 
     [HttpGet]

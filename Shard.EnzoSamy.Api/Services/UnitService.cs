@@ -26,7 +26,7 @@ public class UnitService(UserService userService, SectorService sectorService, L
         );
     }
     
-    public DateTime CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime, bool isAdmin)
+    public TimeSpan CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime, bool isAdmin)
     {
         var travelTime = TimeSpan.Zero;
         if (unit.System != unit.DestinationSystem && unit.DestinationSystem != null)
@@ -37,7 +37,7 @@ public class UnitService(UserService userService, SectorService sectorService, L
         travelTime += TimeSpan.FromSeconds(15);
         if (!isAdmin) unit.Planet = null;
         if (isAdmin) unit.DestinationPlanet = unit.Planet;
-        return currentTime + travelTime;
+        return travelTime;
     }
 
 
@@ -112,18 +112,19 @@ public class UnitService(UserService userService, SectorService sectorService, L
         return requiredResources;
     }
 
-    public bool checkIfUnitHasMoreRessourceThanUser(UnitSpecification unit, UserSpecification user)
+    public bool SameResourceQuantity(Dictionary<string, int?> resourceQuantity1, Dictionary<string, int?> resourceQuantity2)
     {
-        foreach (var ressource in unit.ResourcesQuantity)
+        if (resourceQuantity1.Count != resourceQuantity2.Count)
+            return false;
+        foreach (var resource in resourceQuantity1)
         {
-            if (user.ResourcesQuantity.TryGetValue(ressource.Key, out int? userQuantity) &&
-                ressource.Value > userQuantity)
+            if (!resourceQuantity2.ContainsKey(resource.Key) || resourceQuantity2[resource.Key] != resource.Value)
             {
-                return true;
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 
     public void addResourceToUnit(UnitSpecification unitSpecification, KeyValuePair<string, int?> ressource)
