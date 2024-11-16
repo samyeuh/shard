@@ -24,6 +24,7 @@ builder.Services.AddSingleton(provider =>
 });
 
 builder.Services.AddSingleton(new List<UserSpecification>());
+builder.Services.AddSingleton<DistantShardsService>();
 builder.Services.AddSingleton<SectorService>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<UnitService>();

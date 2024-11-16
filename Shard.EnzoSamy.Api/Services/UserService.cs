@@ -17,15 +17,30 @@ public class UserService
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false)
+    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false, bool isShard = false)
     {
         var generatedUnits = _generateUnits();
         if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
+        if (isShard)
+        {
+            newUser.ResourcesQuantity = RessourcesToZero();
+            generatedUnits = [];
+        }
         var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, newUser.Buildings,generatedUnits);
         var usersId = _users.Select(user => user.Id).ToList();
         if (usersId.Contains(newUser.Id)) _users.Remove(_users.Where(user => user.Id == newUser.Id).First());
         _users.Add(user);
         return user;
+    }
+
+    private Dictionary<string, int?> RessourcesToZero()
+    {
+        var resourceQuantities = new Dictionary<string, int?>();
+        foreach (ResourceKind resourceKind in Enum.GetValues(typeof(ResourceKind)))
+        {
+            resourceQuantities[resourceKind.ToString().ToLower()] = 0;
+        }
+        return resourceQuantities;
     }
     
     private List<UnitSpecification> _generateUnits()

@@ -60,6 +60,9 @@ public class UnitsController(
     public async Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId,
         [FromBody] UnitSpecification updatedUnit)
     {
+        // si vaisseau existe pas + User.IsInRole("shard")
+        // -> enregistrer le cargo + ( test 2 ;) l'ajouter au user
+        // faut créer le vaisseau dans le system qui est enregistré dans la classe DistantShard
         var isAdmin = User.IsInRole("admin");
         logger.LogInformation(
             $"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
