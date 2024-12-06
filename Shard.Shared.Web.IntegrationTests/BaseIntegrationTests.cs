@@ -34,6 +34,10 @@ public abstract partial class BaseIntegrationTests<TEntryPoint, TWebApplicationF
                 {
                     services.AddSingleton<IClock>(fakeClock);	
                     services.AddSingleton<IStartupFilter>(fakeClock);
+                    services.Configure<MapGeneratorOptions>(options =>
+                    {
+                        options.Seed = "Test application";
+                    });
                 });
             }); 
     } 
@@ -52,7 +56,7 @@ public abstract partial class BaseIntegrationTests<TEntryPoint, TWebApplicationF
             new CookieContainerHandler(),
             new TimeoutHandler());
 
-        client.Timeout = TimeSpan.FromSeconds(3);
+        client.SetTimeoutIfNotDebug(TimeSpan.FromSeconds(3));
 
         return client;
     }

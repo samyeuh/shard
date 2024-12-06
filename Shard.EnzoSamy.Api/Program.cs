@@ -1,30 +1,42 @@
-using Shard.EnzoSamy.Api;
+using Microsoft.Extensions.Options;
 using Shard.EnzoSamy.Api.Services;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
+using Microsoft.AspNetCore.Authentication;
+using Shard.EnzoSamy.Api.Background;
+using Shard.EnzoSamy.Api.Security; 
+using MapGenerator = Shard.EnzoSamy.Api.MapGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Enregistrer SectorSpecification comme singleton
-builder.Services.AddSingleton(provider => new MapGenerator(new MapGeneratorOptions()
+builder.Services.Configure<MapGeneratorOptions>(
+    builder.Configuration.GetSection("shard:MapGenerator"));
+
+builder.Services.AddSingleton(provider =>
 {
-    Seed = "EnzoSamy"
-}).Generate());
+    var options = provider.GetRequiredService<IOptions<MapGeneratorOptions>>().Value;
+    return new MapGenerator(options).Generate();
+});
 
 builder.Services.AddSingleton(new List<UserSpecification>());
-builder.Services.AddSingleton<IClock, SystemClock>();
-builder.Services.AddSingleton(new List<UserWithUnitSpecification>());
-builder.Services.AddSingleton(new List<BuildingSpecification>());
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<SectorService>();
-builder.Services.AddScoped<UnitService>();
+builder.Services.AddSingleton<SectorService>();
+builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<UnitService>();
+builder.Services.AddSingleton<ResourceService>();
+builder.Services.AddSingleton<FightService>();
+builder.Services.AddHostedService<FightBackground>();
+
+// Add authentication service with custom handler
+builder.Services.AddAuthentication("BasicAuthentication")
+    .AddScheme<AuthenticationSchemeOptions, CustomAuthHandler>("BasicAuthentication", null);
+
+// Add the admin credentials (replace with secure storage or configuration in production)
+builder.Services.AddSingleton(new AdminCredentials("admin", "password"));
 
 var app = builder.Build();
 
@@ -37,6 +49,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication(); // Ajouter l'authentification
 app.UseAuthorization();
 
 app.MapControllers();
