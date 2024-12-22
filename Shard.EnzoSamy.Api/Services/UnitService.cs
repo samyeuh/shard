@@ -26,7 +26,7 @@ public class UnitService(UserService userService, SectorService sectorService, L
         );
     }
     
-    public DateTime CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime, bool isAdmin)
+    public TimeSpan CalculateTripTimeSpan(UnitSpecification unit, DateTime currentTime, bool isAdmin)
     {
         var travelTime = TimeSpan.Zero;
         if (unit.System != unit.DestinationSystem && unit.DestinationSystem != null)
@@ -37,27 +37,8 @@ public class UnitService(UserService userService, SectorService sectorService, L
         travelTime += TimeSpan.FromSeconds(15);
         if (!isAdmin) unit.Planet = null;
         if (isAdmin) unit.DestinationPlanet = unit.Planet;
-        return currentTime + travelTime;
+        return travelTime;
     }
-
-   /* public async void FightUnits(string userId, string unitId, IClock clock)
-    {
-        var user = userService.FindUser(userId);
-        if (user is null) return;
-        
-        var unit = user.Units.FirstOrDefault(u => u.Id == unitId);
-        if (unit is null) return;
-        
-        var enemy = GetUnitInSystem(unit.System)
-            .Where(u => u.Key.Id != unitId && unit.TypePriority.Contains(u.Key.Type) && u.Value != userId)
-            .OrderBy(u => unit.TypePriority.IndexOf(u.Key.Type)).FirstOrDefault();
-        if (enemy.Key is null) return;
-        
-        // await fightService.StartFight(unit, enemy.Key, clock);
-        
-        if (unit.Health <= 0) DestroyUnit(userId, unit.Id);
-        if (enemy.Key.Health <= 0) DestroyUnit(enemy.Value, enemy.Key.Id);
-    }*/
 
 
     public Dictionary<UnitSpecification, string> GetUnitInSystem(String system)
@@ -96,5 +77,104 @@ public class UnitService(UserService userService, SectorService sectorService, L
         user.Units.Remove(unit);
         return true;
     }
-    
+
+    public Dictionary<string, int>? GetRequiredResources(string unitType)
+    {
+        var requiredResources = new Dictionary<string, int>();
+        switch (unitType)
+        {
+            case "scout":
+                requiredResources["carbon"] = 5;
+                requiredResources["iron"] = 5;
+                break;
+            case "builder":
+                requiredResources["carbon"] = 5;
+                requiredResources["iron"] = 10;
+                break;
+            case "fighter":
+                requiredResources["aluminium"] = 10;
+                requiredResources["iron"] = 20;
+                break;
+            case "bomber":
+                requiredResources["titanium"] = 10;
+                requiredResources["iron"] = 30;
+                break;
+            case "cruiser":
+                requiredResources["gold"] = 20;
+                requiredResources["iron"] = 60;
+                break;
+            case "cargo":
+                requiredResources["carbon"] = 10;
+                requiredResources["iron"] = 10;
+                requiredResources["gold"] = 5;
+                break;
+        }
+        return requiredResources;
+    }
+
+    public bool SameResourceQuantity(Dictionary<string, int?> resourceQuantity1, Dictionary<string, int?> resourceQuantity2)
+    {
+        if (resourceQuantity1.Count != resourceQuantity2.Count)
+            return false;
+        foreach (var resource in resourceQuantity1)
+        {
+            if (!resourceQuantity2.ContainsKey(resource.Key) || resourceQuantity2[resource.Key] != resource.Value)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void addResourceToUnit(UnitSpecification unitSpecification, KeyValuePair<string, int?> ressource)
+    {
+            if (unitSpecification.ResourcesQuantity.ContainsKey(ressource.Key))
+            {
+                unitSpecification.ResourcesQuantity[ressource.Key] += ressource.Value;
+            }
+            else
+            {
+                unitSpecification.ResourcesQuantity.Add(ressource.Key, ressource.Value);
+            }
+    }
+
+    public void removeResourceToUnit(UnitSpecification unit, KeyValuePair<string, int?> resource)
+    {
+           
+            if (!unit.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                return;
+            }
+        
+            
+            if (unit.ResourcesQuantity[resource.Key] - resource.Value < 0)
+            {
+                return;
+            }
+        
+            
+            unit.ResourcesQuantity[resource.Key] -= resource.Value;
+    }
+
+
+    public Dictionary<string, int?> calculateLoadUnload(UnitSpecification unit, Dictionary<string, int?> resources)
+    {
+        Dictionary<string, int?> newResources = new Dictionary<string, int?>();
+        foreach (var resource in resources)
+        {
+            if (unit.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                var value = unit.ResourcesQuantity[resource.Key].Value;
+                newResources[resource.Key] = resource.Value - value;
+            }
+            else
+            {
+                newResources[resource.Key] = resource.Value;
+            }
+        }
+
+        return newResources;
+    }
+
 }

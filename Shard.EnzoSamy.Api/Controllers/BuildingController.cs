@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Enumerations;
@@ -10,7 +12,7 @@ namespace Shard.EnzoSamy.Api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class BuildingController(UserService userService, SectorService sectorService, IClock clock) : ControllerBase
+    public class BuildingController(UserService userService, UnitService unitService, SectorService sectorService, IClock clock) : ControllerBase
     {
         // Méthode existante : BuildBuildingOnPlanet
         [HttpPost]
@@ -43,8 +45,7 @@ namespace Shard.EnzoSamy.Api.Controllers
             }
             else if (buildingSpecification.Type == "starport")
             {
-                // Le starport n'a pas besoin de catégorie de ressource
-                buildingSpecification.ResourceCategory = null;
+                buildingSpecification.BuilderId = buildingSpecification.BuilderId;
             }
             else
             {
@@ -67,7 +68,7 @@ namespace Shard.EnzoSamy.Api.Controllers
 
         [HttpPost]
         [Route("/users/{userId}/buildings/{buildingId}/queue")]
-        public ActionResult QueueUnit(string userId, string buildingId, [FromBody] UnitRequest unitRequest)
+        public ActionResult<UnitSpecification> QueueUnit(string userId, string buildingId, [FromBody] UnitRequest unitRequest)
         {
 
             var user = userService.FindUser(userId);
@@ -76,42 +77,33 @@ namespace Shard.EnzoSamy.Api.Controllers
             var building = user.Buildings.FirstOrDefault(b => b.Id == buildingId);
             if (building == null) return NotFound("Building not found.");
 
-            // Vérifie que le bâtiment est un 'starport' et qu'il est construit
+            
             if (building.Type != "starport" || !building.IsBuilt)
             {
                 return BadRequest("Building must be a built starport.");
             }
 
-            // Définir les coûts en fonction du type d'unité
-            var requiredResources = new Dictionary<string, int>();
-            switch (unitRequest.Type.ToLower())
-            {
-                case "scout":
-                    requiredResources["carbon"] = 5;
-                    requiredResources["iron"] = 5;
-                    break;
-                case "builder":
-                    requiredResources["carbon"] = 5;
-                    requiredResources["iron"] = 10;
-                    break;
-                default:
-                    return BadRequest("Invalid unit type.");
-            }
+           
+            var requiredResources = unitService.GetRequiredResources(unitRequest.Type.ToLower());
+            if (!requiredResources.Any()) return BadRequest("Invalid unit type");
 
-            // Vérifier les ressources de l'utilisateur
+            
             if (!userService.HasSufficientResources(user, requiredResources))
                 return BadRequest("Insufficient resources.");
 
-            // Récupérer le SystemSpecification correspondant
+           
             var systemSpecification = sectorService.GetOneSystem(building.System);
             if (systemSpecification == null) return NotFound($"System with ID {building.System} not found.");
 
-            // Soustraire les ressources et ajouter l'unité à l'utilisateur
+            var planetSpecification = sectorService.GetOnePlanet(building.Planet, building.System);
+            if (planetSpecification == null) return NotFound($"System with ID {building.Planet} not found.");
+            
+            
             userService.DeductResources(user, requiredResources);
-            var newUnit = new UnitSpecification(systemSpecification, unitRequest.Type, userId);
+            var newUnit = new UnitSpecification(systemSpecification, planetSpecification, unitRequest.Type, userId);
             user.Units.Add(newUnit);
 
-            return Created(newUnit.Url, newUnit);
+            return newUnit;
         }
         
         [HttpGet]

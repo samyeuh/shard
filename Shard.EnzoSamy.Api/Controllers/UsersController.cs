@@ -32,7 +32,8 @@ public class UsersController : ControllerBase
         try
         {
             var isAdmin = User.IsInRole("admin");
-            var user = _userService.CreateUser(newUser, isAdmin);
+            var isShard = User.IsInRole("shard");
+            var user = _userService.CreateUser(newUser, isAdmin, isShard);
             return user;
         }
         catch (Exception)

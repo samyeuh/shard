@@ -1,4 +1,6 @@
-﻿using Shard.EnzoSamy.Api.Contracts;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Shard.EnzoSamy.Api.Contracts;
 using Shard.EnzoSamy.Api.Specifications;
 using Shard.Shared.Core;
 
@@ -15,15 +17,30 @@ public class UserService
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false)
+    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false, bool isShard = false)
     {
         var generatedUnits = _generateUnits();
         if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
+        if (isShard)
+        {
+            newUser.ResourcesQuantity = RessourcesToZero();
+            generatedUnits = [];
+        }
         var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, newUser.Buildings,generatedUnits);
         var usersId = _users.Select(user => user.Id).ToList();
         if (usersId.Contains(newUser.Id)) _users.Remove(_users.Where(user => user.Id == newUser.Id).First());
         _users.Add(user);
         return user;
+    }
+
+    private Dictionary<string, int?> RessourcesToZero()
+    {
+        var resourceQuantities = new Dictionary<string, int?>();
+        foreach (ResourceKind resourceKind in Enum.GetValues(typeof(ResourceKind)))
+        {
+            resourceQuantities[resourceKind.ToString().ToLower()] = 0;
+        }
+        return resourceQuantities;
     }
     
     private List<UnitSpecification> _generateUnits()
@@ -76,6 +93,32 @@ public class UserService
     {
         return requiredResources.All(resource =>
             user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
+    }
+
+    public void removeResourceToUser(UserSpecification user, KeyValuePair<string, int?> resource)
+    {
+            if (!user.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                throw new KeyNotFoundException($"Resource '{resource.Key}' not found in the unit's inventory.");
+            }
+
+            if (user.ResourcesQuantity[resource.Key] - resource.Value < 0)
+            {
+                throw new InvalidOperationException($"Insufficient quantity of '{resource.Key}' in the unit to remove {resource.Value}.");
+            }
+            user.ResourcesQuantity[resource.Key] -= resource.Value;
+    }
+
+    public void AddResourceToUser(UserSpecification user, KeyValuePair<string, int?> resource)
+    { 
+        if (user.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                user.ResourcesQuantity[resource.Key] += resource.Value;
+            }
+            else
+            {
+                user.ResourcesQuantity.Add(resource.Key, resource.Value);
+            }
     }
 
 }

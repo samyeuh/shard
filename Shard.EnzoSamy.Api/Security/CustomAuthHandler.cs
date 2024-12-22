@@ -5,22 +5,26 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using Shard.EnzoSamy.Api.Services;
 
 namespace Shard.EnzoSamy.Api.Security
 {
     public class CustomAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly AdminCredentials _adminCredentials;
+        private readonly DistantShardsService _distantShardsService;
 
         public CustomAuthHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
+            DistantShardsService distantShardsService, // Inject ShardsService
             AdminCredentials adminCredentials) // Inject AdminCredentials
             : base(options, logger, encoder, clock)
         {
             _adminCredentials = adminCredentials;
+            _distantShardsService = distantShardsService;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -49,6 +53,16 @@ namespace Shard.EnzoSamy.Api.Security
                     var principal = new ClaimsPrincipal(identity);
                     var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
+                    return AuthenticateResult.Success(ticket);
+                }
+                else if (_distantShardsService[username] is DistantShard distantShard 
+                         && distantShard.SharedPassword == password)
+                {
+                    var claims = new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.Role, "shard") };
+                    var identity = new ClaimsIdentity(claims, Scheme.Name);
+                    var principal = new ClaimsPrincipal(identity);
+                    var ticket = new AuthenticationTicket(principal, Scheme.Name);
+                    
                     return AuthenticateResult.Success(ticket);
                 }
                 else
