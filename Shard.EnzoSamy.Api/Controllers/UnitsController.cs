@@ -12,12 +12,11 @@ namespace Shard.EnzoSamy.Api.Controllers;
 public class UnitsController(
     UserService userService,
     UnitService unitService,
-    IClock? clock,
+    IClock clock,
     ILogger<UnitsController> logger)
     : ControllerBase
 {
     public record UnitLocation(string System, string? Planet, IReadOnlyDictionary<string, int>? ResourcesQuantity);
-
 
     [HttpGet]
     [Route("/users/{userId}/units")]
@@ -58,25 +57,30 @@ public class UnitsController(
 
     [HttpPut]
     [Route("/users/{userId}/units/{unitId}")]
-    public ActionResult<UnitSpecification> MoveSystemUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
+    public Task<ActionResult<UnitSpecification>> PutUnit(string userId, string unitId, [FromBody] UnitSpecification updatedUnit)
     {
+        var isAdmin = User.IsInRole("admin");
         logger.LogInformation($"All informations for updatedUnit {updatedUnit.Id}, DestinationPlanet {updatedUnit.DestinationPlanet}, Destination System {updatedUnit.DestinationSystem}");
         if (unitId != updatedUnit.Id)
         {
-            return BadRequest("The unitId in the URL does not match the Id in the body.");
+            return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("The unitId in the URL does not match the Id in the body."));
         }
         var user = userService.FindUser(userId);
         if (user == null)
         {
-            return NotFound($"User with ID {userId} not found.");
+            return Task.FromResult<ActionResult<UnitSpecification>>(NotFound($"User with ID {userId} not found."));
         }
 
         var unit = userService.GetUnitsForUser(userId).FirstOrDefault(u => u.Id == unitId);
+        
         if (unit == null)
         {
-            return NotFound($"Unit with ID {unitId} not found.");
+            if (!isAdmin) return Task.FromResult<ActionResult<UnitSpecification>>(Unauthorized());
+            unit = unitService.CreateUnit(updatedUnit, userId);
+            
+            if (unit is null) return Task.FromResult<ActionResult<UnitSpecification>>(BadRequest("Error"));
         }
-        
+
         var buildingNotConstruct = user.Buildings.FirstOrDefault(b => b.BuilderId == unitId && !b.IsBuilt);
         if (buildingNotConstruct != null)
         {
@@ -86,14 +90,23 @@ public class UnitsController(
                 user.Buildings.Remove(buildingNotConstruct);
             }
         }
-        
-        unit.DestinationSystem = updatedUnit.DestinationSystem;
-        unit.DestinationPlanet = updatedUnit.DestinationPlanet;
-        unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now);
 
-        unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+        if (updatedUnit.DestinationSystem != null || updatedUnit.DestinationPlanet != null)
+        {
+            unit!.DestinationSystem = updatedUnit.DestinationSystem;
+            unit.DestinationPlanet = updatedUnit.DestinationPlanet;
+            unit.EstimatedTimeOfArrival = unitService.CalculateTripTimeSpan(unit, clock.Now, isAdmin);
+            unit.StartTravel(unit.DestinationSystem, unit.DestinationPlanet, unit.EstimatedTimeOfArrival.Value, clock);
+        }
+        else
+        {
+            unit.System = updatedUnit.System;
+            unit.Planet = updatedUnit.Planet;
+            unit.DestinationSystem = updatedUnit.System;
+            unit.DestinationPlanet = updatedUnit.Planet;
+        }
     
-        return unit;
+        return Task.FromResult<ActionResult<UnitSpecification>>(unit);
     }
 
     [HttpGet]

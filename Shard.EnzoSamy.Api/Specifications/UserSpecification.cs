@@ -7,11 +7,13 @@ public class UserSpecification
 {
     public string Id { get; set; }
     public string Pseudo { get; set; }
-    public string? DateOfCreation { get; set; }
+    public DateTime DateOfCreation { get; set; }
     public Dictionary<string, int?>? ResourcesQuantity { get; set; }
-    public List<UnitSpecification> Units { get; set; }
+    public List<UnitSpecification>? Units { get; set; }
     
-    public List<BuildingSpecification> Buildings { get; set; }
+    public List<BuildingSpecification>? Buildings { get; set; }
+
+    public UserSpecification(){}
     
 
     public UserSpecification(string id, string pseudo, List<UnitSpecification> units)
@@ -19,10 +21,21 @@ public class UserSpecification
         Id = id;
         Pseudo = pseudo;
         Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
-        DateOfCreation = DateTime.Now.ToShortDateString();
+        DateOfCreation = DateTime.Now;
         ResourcesQuantity = _initializeResources();
         Units = units;
         Buildings = [];
+    }
+
+    public UserSpecification(string id, string pseudo, DateTime dateOfCreation, Dictionary<string, int?>? resourceQuantity, List<BuildingSpecification>? buildings, List<UnitSpecification> units)
+    {
+        Id = id;
+        Pseudo = pseudo;
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("fr-FR");
+        DateOfCreation = dateOfCreation;
+        ResourcesQuantity = resourceQuantity ?? _initializeResources();
+        Units = units;
+        Buildings = buildings ?? []; 
     }
 
     private Dictionary<string, int?> _initializeResources()

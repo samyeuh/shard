@@ -15,10 +15,13 @@ public class UserService
         _sector = sector;
     }
 
-    public UserSpecification CreateUser(UserRequest newUser)
+    public UserSpecification CreateUser(UserSpecification newUser, bool isAdmin=false)
     {
         var generatedUnits = _generateUnits();
-        var user = new UserSpecification(newUser.Id, newUser.Pseudo, generatedUnits);
+        if (!isAdmin && newUser.ResourcesQuantity != null) newUser.ResourcesQuantity = null;
+        var user = new UserSpecification(newUser.Id, newUser.Pseudo, newUser.DateOfCreation, newUser.ResourcesQuantity, newUser.Buildings,generatedUnits);
+        var usersId = _users.Select(user => user.Id).ToList();
+        if (usersId.Contains(newUser.Id)) _users.Remove(_users.Where(user => user.Id == newUser.Id).First());
         _users.Add(user);
         return user;
     }
@@ -58,4 +61,21 @@ public class UserService
 
         return null;
     }
+    public void DeductResources(UserSpecification user, Dictionary<string, int> resources)
+    {
+        foreach (var resource in resources)
+        {
+            if (user.ResourcesQuantity.ContainsKey(resource.Key))
+            {
+                user.ResourcesQuantity[resource.Key] -= resource.Value;
+            }
+        }
+    }
+
+    public bool HasSufficientResources(UserSpecification user, Dictionary<string, int> requiredResources)
+    {
+        return requiredResources.All(resource =>
+            user.ResourcesQuantity.TryGetValue(resource.Key, out var quantity) && quantity >= resource.Value);
+    }
+
 }

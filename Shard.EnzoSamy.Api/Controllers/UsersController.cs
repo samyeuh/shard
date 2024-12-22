@@ -17,7 +17,7 @@ public class UsersController : ControllerBase
 
     [HttpPut]
     [Route("/users/{userId}")]
-    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserRequest newUser)
+    public ActionResult<UserSpecification> PutPlayer(string userId, [FromBody] UserSpecification newUser)
     {
         if (userId != newUser.Id)
         {
@@ -31,7 +31,8 @@ public class UsersController : ControllerBase
 
         try
         {
-            var user = _userService.CreateUser(newUser);
+            var isAdmin = User.IsInRole("admin");
+            var user = _userService.CreateUser(newUser, isAdmin);
             return user;
         }
         catch (Exception)
