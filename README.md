@@ -4,3 +4,13 @@
 
 Il offre un univers immersif composé de **systèmes planétaires semi-aléatoires**, des **mécanismes d'exploration**, des **combats spatiaux** et des **micro-services connectés**.
 
+*Informations supplémentaires sur [le sujet](docs/sujet.pptx).*
+
+### Contributeurs
+
+Ce projet a été réalisé avec l'aide de :
+
+- [Enzo DESBOIS](https://github.com/dbsenzo)
+- [Ashraf ADEL](https://www.linkedin.com/in/ashraf-adel-333a091b0/)
+- [Enzo IHADJADENE](https://www.linkedin.com/in/enzo-ihadjadene/)
+
