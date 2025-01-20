@@ -14,3 +14,8 @@ Ce projet a été réalisé avec l'aide de :
 - [Ashraf ADEL](https://www.linkedin.com/in/ashraf-adel-333a091b0/)
 - [Enzo IHADJADENE](https://www.linkedin.com/in/enzo-ihadjadene/)
 
+et sous la super-visions de mes professeurs:
+
+- [Marc PINEAU](https://www.linkedin.com/in/marcpineau10/)
+- [Eric PAUMIER](https://www.linkedin.com/in/edouard-paumier-9949a28/)
+
